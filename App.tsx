@@ -1,20 +1,43 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+
+import { HudScreen } from './src/screens/HudScreen';
+import { SettingsScreen } from './src/screens/SettingsScreen';
+import { SettingsProvider, useSettings } from './src/settings/SettingsContext';
+import { theme } from './src/theme';
+
+function Root() {
+  const [showSettings, setShowSettings] = useState(false);
+  const { ready } = useSettings();
+
+  // Rendering the HUD before stored settings load would flash the defaults —
+  // wrong colour, wrong units, unmirrored — in the driver's eyeline.
+  if (!ready) return <View style={styles.root} />;
+
+  return (
+    <SafeAreaView style={styles.root} edges={['top', 'bottom', 'left', 'right']}>
+      {showSettings ? (
+        <SettingsScreen onClose={() => setShowSettings(false)} />
+      ) : (
+        <HudScreen onOpenSettings={() => setShowSettings(true)} />
+      )}
+    </SafeAreaView>
+  );
+}
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <SafeAreaProvider>
+      <SettingsProvider>
+        <StatusBar hidden />
+        <Root />
+      </SettingsProvider>
+    </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  root: { flex: 1, backgroundColor: theme.bg },
 });
