@@ -15,8 +15,17 @@ export type Maneuver =
   | 'arrive'
   | 'unknown';
 
+/**
+ * Which side of the road to be on. This is only ever as good as the wording the
+ * navigation app chose: there is no lane number anywhere in a notification, and
+ * a phone cannot work out its own lane — GNSS is accurate to a few metres and a
+ * lane is 3.5 m wide. So this is a side, never "lane 3 of 4".
+ */
+export type LaneHint = 'left' | 'center' | 'right';
+
 export type Instruction = {
   maneuver: Maneuver;
+  lane: LaneHint | null;
   /** Metres to the manoeuvre, when the notification spelled it out. */
   distanceM: number | null;
   distanceText: string | null;
@@ -43,6 +52,31 @@ const KEYWORDS: [Maneuver, RegExp][] = [
   ['right', /\bright\b|dreapta|δεξ/i],
   ['straight', /straight|continue|înainte|continuă|ευθεία|συνεχ/i],
 ];
+
+/**
+ * Lane wording, as Google Maps in particular phrases it: "Use the right 2 lanes
+ * to turn right", "Keep left at the fork". Waze says it far less often.
+ */
+// Greek endings are matched with \S rather than \w: JavaScript's \w is ASCII
+// only, so it stops dead at the accented vowel in "δεξιά".
+const LANE_HINTS: [LaneHint, RegExp][] = [
+  ['center', /middle lane|centre lane|center lane|banda din mijloc|μεσαία λωρίδα/i],
+  [
+    'right',
+    /(?:use|take|keep|stay in|stay on)\b[^.;]{0,24}\bright\b|right\s+\d*\s*lanes?|banda din dreapta|ține dreapta|δεξι\S*\s+λωρίδ/i,
+  ],
+  [
+    'left',
+    /(?:use|take|keep|stay in|stay on)\b[^.;]{0,24}\bleft\b|left\s+\d*\s*lanes?|banda din stânga|ține stânga|αριστερ\S*\s+λωρίδ/i,
+  ],
+];
+
+export function parseLane(text: string): LaneHint | null {
+  for (const [lane, pattern] of LANE_HINTS) {
+    if (pattern.test(text)) return lane;
+  }
+  return null;
+}
 
 /**
  * `300 m`, `1,2 km`, `0.4 mi`, `500 ft`, `200 μ` — comma or dot decimals.
@@ -109,9 +143,26 @@ export function parseInstruction(notification: NavNotification): Instruction | n
 
   return {
     maneuver,
+    lane: parseLane(joined),
     distanceM,
     distanceText: match ? `${match[1]} ${match[2]}` : null,
     street: street?.trim() ?? null,
     source: SOURCES[notification.package] ?? 'Navigation',
   };
+}
+
+/** Chevrons start reacting at this range and are fully urgent at the turn. */
+const APPROACH_RANGE_M = 400;
+
+/** No distance in the notification: hold a calm middle intensity. */
+const UNKNOWN_PROXIMITY = 0.3;
+
+/**
+ * How close the manoeuvre is, as 0 (far off) to 1 (at the turn). The HUD uses
+ * this to tighten and quicken the chevrons as you come up on a corner.
+ */
+export function proximityFromDistance(distanceM: number | null): number {
+  if (distanceM == null) return UNKNOWN_PROXIMITY;
+  if (distanceM <= 0) return 1;
+  return Math.max(0, Math.min(1, 1 - distanceM / APPROACH_RANGE_M));
 }

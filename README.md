@@ -16,7 +16,7 @@ below.
 | --- | --- | --- |
 | Speed, heading, altitude, GPS accuracy | The phone's GNSS receiver | Location permission |
 | Trip distance, moving time, top speed | Integrated from the same fixes | — |
-| Next manoeuvre, distance, street | The ongoing notification Waze or Google Maps posts while navigating | Notification access (Android) |
+| Next manoeuvre, distance, street, side-of-road hint | The ongoing notification Waze or Google Maps posts while navigating | Notification access (Android) |
 | RPM, gear, coolant, intake and outside air, throttle, engine load, fuel level, battery voltage | The car's ECU | An ELM327 Bluetooth **LE** adapter |
 
 Speed works with no internet connection and no hardware — GNSS is a receiver,
@@ -33,6 +33,14 @@ sitting on top of it as an overlay.
 So the flow is: start the route in Waze as usual, switch to Drive HUD, and the
 manoeuvres appear here as Waze announces them. There is an **Open Waze** button
 in settings for the handover.
+
+The manoeuvre is drawn as a corridor of chevrons in perspective, rising out of
+a vanishing point and sweeping toward you. As the turn closes in they swell, run
+further down the screen and speed up, and the corridor leans the way the road
+bends. It is **not** placed over a lane, and cannot be: GNSS is accurate to a
+few metres, a lane is 3.5 m wide, and no notification carries a lane number.
+When an app does spell out a side — "Use the right 2 lanes", "Keep left" — that
+appears as a text badge.
 
 This also means navigation is **Android only**. iOS does not let any app read
 another app's notifications, and there is no way around it.

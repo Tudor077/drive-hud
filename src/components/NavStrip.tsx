@@ -1,10 +1,16 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { Instruction } from '../nav/parseInstruction';
+import { Instruction, proximityFromDistance } from '../nav/parseInstruction';
 import { theme } from '../theme';
 import { SpeedUnit, distanceLabel } from '../units';
-import { ManeuverArrow } from './ManeuverArrow';
+import { ChevronCorridor } from './ChevronCorridor';
+
+const LANE_LABEL = {
+  left: 'KEEP LEFT',
+  center: 'MIDDLE LANE',
+  right: 'KEEP RIGHT',
+} as const;
 
 export function NavStrip({
   instruction,
@@ -22,20 +28,34 @@ export function NavStrip({
       ? distanceLabel(instruction.distanceM, unit)
       : instruction.distanceText;
 
+  const width = compact ? 84 : 108;
+  const height = compact ? 92 : 120;
+
   return (
     <View style={styles.wrap}>
-      <ManeuverArrow maneuver={instruction.maneuver} size={compact ? 46 : 64} color={color} />
+      <ChevronCorridor
+        maneuver={instruction.maneuver}
+        width={width}
+        height={height}
+        color={color}
+        proximity={proximityFromDistance(instruction.distanceM)}
+      />
       <View style={styles.text}>
         {distance ? (
           <Text
             allowFontScaling={false}
-            style={[styles.distance, { color, fontSize: compact ? 26 : 34 }]}>
+            style={[styles.distance, { color, fontSize: compact ? 30 : 40 }]}>
             {distance}
           </Text>
         ) : null}
         {instruction.street ? (
           <Text allowFontScaling={false} numberOfLines={1} style={styles.street}>
             {instruction.street}
+          </Text>
+        ) : null}
+        {instruction.lane ? (
+          <Text allowFontScaling={false} style={[styles.lane, { color }]}>
+            {LANE_LABEL[instruction.lane]}
           </Text>
         ) : null}
       </View>
@@ -51,7 +71,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
-    paddingVertical: 8,
+    paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 12,
     borderWidth: 1,
@@ -61,5 +81,6 @@ const styles = StyleSheet.create({
   text: { flex: 1, minWidth: 0 },
   distance: { fontWeight: '900', fontVariant: ['tabular-nums'] },
   street: { color: theme.text, fontSize: 15, fontWeight: '600' },
+  lane: { fontSize: 11, fontWeight: '800', letterSpacing: 1.6, marginTop: 2 },
   source: { color: theme.dim, fontSize: 10, fontWeight: '700', letterSpacing: 1.5 },
 });

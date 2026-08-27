@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { parseInstruction } from '../src/nav/parseInstruction.ts';
+import { parseInstruction, parseLane, proximityFromDistance } from '../src/nav/parseInstruction.ts';
 import { compassPoint, distanceLabel, speedFromMs } from '../src/units.ts';
 
 const notification = (fields: Record<string, string | null>) => ({
@@ -68,4 +68,43 @@ test('converts and labels units', () => {
   assert.equal(distanceLabel(2400, 'kmh'), '2.4 km');
   assert.equal(compassPoint(0), 'N');
   assert.equal(compassPoint(93), 'E');
+});
+
+test('scales chevron urgency with the distance to the turn', () => {
+  assert.equal(proximityFromDistance(0), 1);
+  assert.equal(proximityFromDistance(200), 0.5);
+  assert.equal(proximityFromDistance(400), 0);
+  assert.equal(proximityFromDistance(5000), 0);
+});
+
+test('holds a middle intensity when the app gave no distance', () => {
+  const proximity = proximityFromDistance(null);
+  assert.ok(proximity > 0 && proximity < 1);
+});
+
+test('picks up the lane wording Google Maps uses', () => {
+  assert.equal(parseLane('Use the right 2 lanes to turn right'), 'right');
+  assert.equal(parseLane('Keep left at the fork'), 'left');
+  assert.equal(parseLane('Use the left lane to turn left'), 'left');
+  assert.equal(parseLane('Stay in the middle lane'), 'center');
+});
+
+test('reads lane wording in Romanian and Greek', () => {
+  assert.equal(parseLane('Folosește banda din dreapta'), 'right');
+  assert.equal(parseLane('Ține stânga la bifurcație'), 'left');
+  assert.equal(parseLane('Χρησιμοποιήστε τη δεξιά λωρίδα'), 'right');
+});
+
+test('does not invent a lane from a plain turn instruction', () => {
+  assert.equal(parseLane('Turn right onto Ermou'), null);
+  assert.equal(parseLane('300 m'), null);
+  assert.equal(parseLane('At the roundabout, take the 2nd exit'), null);
+});
+
+test('carries the lane through to the parsed instruction', () => {
+  const parsed = parseInstruction(
+    notification({ title: 'Turn right', text: 'Use the right 2 lanes · 400 m' })
+  )!;
+  assert.equal(parsed.lane, 'right');
+  assert.equal(parsed.maneuver, 'right');
 });
