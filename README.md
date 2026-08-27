@@ -34,10 +34,18 @@ So the flow is: start the route in Waze as usual, switch to Drive HUD, and the
 manoeuvres appear here as Waze announces them. There is an **Open Waze** button
 in settings for the handover.
 
-The manoeuvre is drawn as a corridor of chevrons in perspective, rising out of
-a vanishing point and sweeping toward you. As the turn closes in they swell, run
-further down the screen and speed up, and the corridor leans the way the road
-bends. It is **not** placed over a lane, and cannot be: GNSS is accurate to a
+The manoeuvre is drawn as a stretch of road in perspective. Chevrons rise out of
+the vanishing point and sweep toward you, swelling and speeding up as the turn
+closes in, and the corridor leans the way the road bends.
+
+On a bend a **warning board** stands at the corner — the chevron plate you get on
+the outside of a real bend. It is treated as an object at a fixed point rather
+than an icon: it grows, drifts to the roadside and drops toward you because you
+are closing on it, then fades as it sweeps past. Its size follows
+`(25 / distance) ^ 0.62` rather than true `1/distance` perspective, which would
+put it under a pixel across at 400 m. Between notifications — Waze reposts about
+once a second — the distance is carried forward by dead reckoning at your GPS
+speed, so the approach is continuous instead of a once-a-second jump. It is **not** placed over a lane, and cannot be: GNSS is accurate to a
 few metres, a lane is 3.5 m wide, and no notification carries a lane number.
 When an app does spell out a side — "Use the right 2 lanes", "Keep left" — that
 appears as a text badge.

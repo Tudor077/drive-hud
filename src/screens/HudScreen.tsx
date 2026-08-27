@@ -4,7 +4,7 @@ import { useKeepAwake } from 'expo-keep-awake';
 import React, { useEffect } from 'react';
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 
-import { NavStrip } from '../components/NavStrip';
+import { NavPanel } from '../components/NavPanel';
 import { RpmBar } from '../components/RpmBar';
 import { SpeedReadout } from '../components/SpeedReadout';
 import { Tile } from '../components/Tile';
@@ -32,7 +32,7 @@ export function HudScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
     deviceId: settings.obdDeviceId,
     deviceName: settings.obdDeviceName,
   });
-  const nav = useNavInstruction(settings.navEnabled);
+  const navigation = useNavInstruction(settings.navEnabled);
 
   useEffect(() => {
     if (settings.landscape) {
@@ -52,7 +52,17 @@ export function HudScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
   const overLimit = settings.speedAlert > 0 && speed != null && speed > settings.speedAlert;
 
   const isLandscape = width > height;
-  const speedFont = Math.min(width * (isLandscape ? 0.3 : 0.55), height * (isLandscape ? 0.55 : 0.3));
+  const nav = navigation.instruction;
+
+  // The approaching warning board needs real depth to read, so with a route
+  // running the road view takes a column of its own and the speed gives up the
+  // space for it.
+  const navWidth = isLandscape ? width * 0.3 : width - 28;
+  const navHeight = isLandscape ? height - 74 : height * 0.36;
+
+  const speedFont = nav
+    ? Math.min(width * (isLandscape ? 0.22 : 0.46), height * (isLandscape ? 0.42 : 0.22))
+    : Math.min(width * (isLandscape ? 0.3 : 0.55), height * (isLandscape ? 0.55 : 0.3));
 
   const { readings } = obd;
   const showObd = settings.obdEnabled && obd.status === 'live';
@@ -108,16 +118,18 @@ export function HudScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
           styles.mirror,
           settings.mirrored ? { transform: [{ scaleX: -1 }] } : null,
         ]}>
-        {nav.instruction ? (
-          <NavStrip
-            instruction={nav.instruction}
-            color={color}
-            unit={settings.unit}
-            compact={!isLandscape}
-          />
-        ) : null}
-
         <View style={[styles.main, isLandscape ? styles.mainRow : styles.mainColumn]}>
+          {nav ? (
+            <NavPanel
+              instruction={nav}
+              color={color}
+              unit={settings.unit}
+              speedMs={gps.speedMs}
+              width={navWidth}
+              height={navHeight}
+            />
+          ) : null}
+
           <SpeedReadout
             value={speed}
             unit={speedLabel(settings.unit)}
@@ -184,8 +196,8 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: theme.bg },
   mirror: { flex: 1, paddingHorizontal: 14, paddingVertical: 10, gap: 8 },
   main: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  mainRow: { flexDirection: 'row', gap: 20 },
-  mainColumn: { flexDirection: 'column', gap: 16 },
+  mainRow: { flexDirection: 'row', gap: 16 },
+  mainColumn: { flexDirection: 'column', gap: 12 },
   side: { alignItems: 'center', gap: 14 },
   tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center' },
   footer: { gap: 2 },

@@ -3,6 +3,16 @@ import { Animated, Easing, StyleSheet, View } from 'react-native';
 import Svg, { Line, Path } from 'react-native-svg';
 
 import { Maneuver } from '../nav/parseInstruction';
+import {
+  SAMPLE_DISTANCES,
+  SIGN_DRIFTS,
+  SIGN_DROPS,
+  SIGN_OPACITIES,
+  SIGN_SCALES,
+  boardDirection,
+  hasBoard,
+} from '../nav/projection';
+import { RoadSign } from './RoadSign';
 
 /**
  * A short stretch of road seen in perspective: chevrons — arrow heads with no
@@ -84,12 +94,15 @@ export function ChevronCorridor({
   height,
   color,
   proximity = 0.3,
+  distance,
 }: {
   maneuver: Maneuver;
   width: number;
   height: number;
   color: string;
   proximity?: number;
+  /** Metres to the manoeuvre, falling continuously. Drives the warning board. */
+  distance?: Animated.Value;
 }) {
   const isArrival = maneuver === 'arrive';
   const step = flowStep(proximity);
@@ -181,6 +194,39 @@ export function ChevronCorridor({
         </Svg>
       ) : null}
 
+      {distance && hasBoard(maneuver) ? (
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            styles.board,
+            { top: height * HORIZON },
+            {
+              opacity: interpolateDistance(distance, SIGN_OPACITIES),
+              transform: [
+                {
+                  translateX: interpolateDistance(
+                    distance,
+                    SIGN_DRIFTS.map((d) => d * width * 0.34 * boardDirection(maneuver))
+                  ),
+                },
+                {
+                  translateY: interpolateDistance(
+                    distance,
+                    SIGN_DROPS.map((d) => d * height * 0.34)
+                  ),
+                },
+                { scale: interpolateDistance(distance, SIGN_SCALES) },
+              ],
+            },
+          ]}>
+          <RoadSign
+            width={width * 0.46}
+            color={color}
+            direction={boardDirection(maneuver)}
+          />
+        </Animated.View>
+      ) : null}
+
       {isArrival ? (
         <View style={styles.centered}>
           <Hologram path={PIN} width={width * 0.6} viewBox="0 0 100 100" color={color} />
@@ -263,8 +309,25 @@ function Hologram({
   );
 }
 
+/** Where the road meets the sky, as a fraction of the panel height. */
+const HORIZON = 0.26;
+
+/**
+ * Animated.interpolate needs an ascending input range, so the projection is
+ * sampled over distances rather than evaluated: the value runs downward through
+ * them as the car closes in.
+ */
+function interpolateDistance(distance: Animated.Value, outputRange: number[]) {
+  return distance.interpolate({
+    inputRange: SAMPLE_DISTANCES,
+    outputRange,
+    extrapolate: 'clamp',
+  });
+}
+
 const styles = StyleSheet.create({
   wrap: { overflow: 'hidden' },
+  board: { position: 'absolute', left: 0, right: 0, alignItems: 'center' },
   centered: {
     position: 'absolute',
     top: 0,

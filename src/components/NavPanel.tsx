@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { Instruction, proximityFromDistance } from '../nav/parseInstruction';
+import { useApproach } from '../nav/useApproach';
 import { theme } from '../theme';
 import { SpeedUnit, distanceLabel } from '../units';
 import { ChevronCorridor } from './ChevronCorridor';
@@ -12,40 +13,46 @@ const LANE_LABEL = {
   right: 'KEEP RIGHT',
 } as const;
 
-export function NavStrip({
+export function NavPanel({
   instruction,
   color,
   unit,
-  compact,
+  speedMs,
+  width,
+  height,
 }: {
   instruction: Instruction;
   color: string;
   unit: SpeedUnit;
-  compact: boolean;
+  /** Road speed, used to carry the approach forward between notifications. */
+  speedMs: number | null;
+  width: number;
+  height: number;
 }) {
-  const distance =
+  const distance = useApproach(instruction.distanceM, speedMs);
+  const label =
     instruction.distanceM != null
       ? distanceLabel(instruction.distanceM, unit)
       : instruction.distanceText;
 
-  const width = compact ? 84 : 108;
-  const height = compact ? 92 : 120;
+  const compact = height < 190;
 
   return (
-    <View style={styles.wrap}>
+    <View style={[styles.wrap, { width }]}>
       <ChevronCorridor
         maneuver={instruction.maneuver}
-        width={width}
-        height={height}
+        width={width - 20}
+        height={height - (compact ? 54 : 72)}
         color={color}
         proximity={proximityFromDistance(instruction.distanceM)}
+        distance={distance}
       />
       <View style={styles.text}>
-        {distance ? (
+        {label ? (
           <Text
             allowFontScaling={false}
-            style={[styles.distance, { color, fontSize: compact ? 30 : 40 }]}>
-            {distance}
+            style={[styles.distance, { color, fontSize: compact ? 28 : 38 }]}>
+            {label}
           </Text>
         ) : null}
         {instruction.street ? (
@@ -53,34 +60,35 @@ export function NavStrip({
             {instruction.street}
           </Text>
         ) : null}
-        {instruction.lane ? (
-          <Text allowFontScaling={false} style={[styles.lane, { color }]}>
-            {LANE_LABEL[instruction.lane]}
+        <View style={styles.meta}>
+          {instruction.lane ? (
+            <Text allowFontScaling={false} style={[styles.lane, { color }]}>
+              {LANE_LABEL[instruction.lane]}
+            </Text>
+          ) : null}
+          <Text allowFontScaling={false} style={styles.source}>
+            {instruction.source}
           </Text>
-        ) : null}
+        </View>
       </View>
-      <Text allowFontScaling={false} style={styles.source}>
-        {instruction.source}
-      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   wrap: {
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: theme.border,
     backgroundColor: theme.surface,
   },
-  text: { flex: 1, minWidth: 0 },
+  text: { alignSelf: 'stretch', alignItems: 'center' },
   distance: { fontWeight: '900', fontVariant: ['tabular-nums'] },
-  street: { color: theme.text, fontSize: 15, fontWeight: '600' },
-  lane: { fontSize: 11, fontWeight: '800', letterSpacing: 1.6, marginTop: 2 },
-  source: { color: theme.dim, fontSize: 10, fontWeight: '700', letterSpacing: 1.5 },
+  street: { color: theme.text, fontSize: 14, fontWeight: '600' },
+  meta: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 3 },
+  lane: { fontSize: 10, fontWeight: '800', letterSpacing: 1.4 },
+  source: { color: theme.dim, fontSize: 10, fontWeight: '700', letterSpacing: 1.4 },
 });
