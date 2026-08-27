@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { parseInstruction, parseLane, proximityFromDistance } from '../src/nav/parseInstruction.ts';
+import { parseInstruction, parseLane } from '../src/nav/parseInstruction.ts';
 import { compassPoint, distanceLabel, speedFromMs } from '../src/units.ts';
 
 const notification = (fields: Record<string, string | null>) => ({
@@ -68,18 +68,6 @@ test('converts and labels units', () => {
   assert.equal(distanceLabel(2400, 'kmh'), '2.4 km');
   assert.equal(compassPoint(0), 'N');
   assert.equal(compassPoint(93), 'E');
-});
-
-test('scales chevron urgency with the distance to the turn', () => {
-  assert.equal(proximityFromDistance(0), 1);
-  assert.equal(proximityFromDistance(200), 0.5);
-  assert.equal(proximityFromDistance(400), 0);
-  assert.equal(proximityFromDistance(5000), 0);
-});
-
-test('holds a middle intensity when the app gave no distance', () => {
-  const proximity = proximityFromDistance(null);
-  assert.ok(proximity > 0 && proximity < 1);
 });
 
 test('picks up the lane wording Google Maps uses', () => {

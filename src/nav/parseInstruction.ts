@@ -151,18 +151,3 @@ export function parseInstruction(notification: NavNotification): Instruction | n
   };
 }
 
-/** Chevrons start reacting at this range and are fully urgent at the turn. */
-const APPROACH_RANGE_M = 400;
-
-/** No distance in the notification: hold a calm middle intensity. */
-const UNKNOWN_PROXIMITY = 0.3;
-
-/**
- * How close the manoeuvre is, as 0 (far off) to 1 (at the turn). The HUD uses
- * this to tighten and quicken the chevrons as you come up on a corner.
- */
-export function proximityFromDistance(distanceM: number | null): number {
-  if (distanceM == null) return UNKNOWN_PROXIMITY;
-  if (distanceM <= 0) return 1;
-  return Math.max(0, Math.min(1, 1 - distanceM / APPROACH_RANGE_M));
-}

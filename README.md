@@ -34,9 +34,11 @@ So the flow is: start the route in Waze as usual, switch to Drive HUD, and the
 manoeuvres appear here as Waze announces them. There is an **Open Waze** button
 in settings for the handover.
 
-The manoeuvre is drawn as a stretch of road in perspective. Chevrons rise out of
-the vanishing point and sweep toward you, swelling and speeding up as the turn
-closes in, and the corridor leans the way the road bends.
+The manoeuvre is drawn as a stretch of road in perspective, with one camera for
+everything in it. The markings are objects 20 m apart on the road surface,
+carried toward you at your GPS speed — at 72 km/h one passes per second, because
+that is how long 20 m takes. The road leans the way the route bends, at full
+strength however far off the turn is.
 
 On a bend a **warning board** stands at the corner — the chevron plate you get on
 the outside of a real bend. It is treated as an object at a fixed point rather

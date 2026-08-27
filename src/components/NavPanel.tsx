@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { Instruction, proximityFromDistance } from '../nav/parseInstruction';
+import { Instruction } from '../nav/parseInstruction';
 import { useApproach } from '../nav/useApproach';
 import { theme } from '../theme';
 import { SpeedUnit, distanceLabel } from '../units';
@@ -44,7 +44,7 @@ export function NavPanel({
         width={width - 20}
         height={height - (compact ? 54 : 72)}
         color={color}
-        proximity={proximityFromDistance(instruction.distanceM)}
+        speedMs={speedMs}
         distance={distance}
       />
       <View style={styles.text}>
