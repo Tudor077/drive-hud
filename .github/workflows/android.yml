@@ -6,6 +6,11 @@ on:
     tags: ['v*']
   pull_request:
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Publish a release under this tag, e.g. v1.0.0. Leave empty to just build an APK.'
+        required: false
+        default: ''
 
 jobs:
   checks:
@@ -81,8 +86,17 @@ jobs:
           path: dist/DriveHUD.apk
           if-no-files-found: error
 
+      # Two ways in: push a v* tag, or run the workflow by hand and name the
+      # tag. The second exists because the action can create the tag itself
+      # through the API, which does not need a tag push.
       - name: Publish a release
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
           files: dist/DriveHUD.apk
+          generate_release_notes: true
+          body: |
+            Download `DriveHUD.apk` below, and allow installs from your browser when Android prompts.
+
+            Signed with the standard Expo debug key: fine for sideloading and for upgrading in place, not for the Play Store.
