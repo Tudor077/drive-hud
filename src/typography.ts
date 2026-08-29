@@ -14,9 +14,3 @@ export const FONT = {
   /** Labels and secondary text. */
   label: 'Rajdhani_600SemiBold',
 } as const;
-
-/**
- * Rajdhani's digits are narrower than the system default, so the box an
- * outlined number needs is narrower too.
- */
-export const DIGIT_ASPECT = 0.52;

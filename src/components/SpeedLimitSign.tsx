@@ -37,9 +37,10 @@ export function SpeedLimitSign({
         fontSize={42}
         fontFamily={FONT.display}
         textAnchor="middle"
+        letterSpacing={2}
         fill="none"
         stroke={colour}
-        strokeWidth={2.6}
+        strokeWidth={2.2}
         strokeLinejoin="round">
         {String(limitKmh)}
       </SvgText>
