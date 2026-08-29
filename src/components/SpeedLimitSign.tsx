@@ -33,14 +33,15 @@ export function SpeedLimitSign({
       <Circle cx={50} cy={50} r={38} stroke={colour} strokeWidth={9} fill="none" />
       <SvgText
         x={50}
-        y={65}
-        fontSize={42}
+        y={64}
+        // Sized down for a three-figure limit, which is wide in this face and
+        // would otherwise run out through the ring.
+        fontSize={String(limitKmh).length > 2 ? 26 : 36}
         fontFamily={FONT.display}
         textAnchor="middle"
-        letterSpacing={2}
-        fill="none"
+        fill={colour}
         stroke={colour}
-        strokeWidth={2.2}
+        strokeWidth={0.7}
         strokeLinejoin="round">
         {String(limitKmh)}
       </SvgText>

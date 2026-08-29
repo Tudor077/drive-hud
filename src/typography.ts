@@ -1,16 +1,19 @@
 /**
- * Rajdhani, embedded at build time rather than loaded at runtime: the digits
+ * Fonts are embedded at build time rather than loaded at runtime: the numbers
  * are drawn as SVG, and react-native-svg asks the platform for a family by
  * name, so it has to be registered natively for the name to resolve.
- *
- * It is a squared-off display face built for instrument panels — even stroke
- * weight, open counters, and digits that stay distinct at a glance, which is
- * what an outlined number needs. The platform default at weight 900 fell back
- * to whatever each device felt like and looked it.
  */
 export const FONT = {
-  /** Numbers and anything read at speed. */
-  display: 'Rajdhani_700Bold',
+  /**
+   * Bungee Outline for the big readouts. It is drawn as an outline rather than
+   * being a solid face with a stroke laid over it, which is the difference
+   * between hollow letterforms and thickened ones: stroking a solid glyph
+   * fattens every stem and squeezes the counters shut, and the bigger the
+   * number the worse it gets. Here the ring is the letter.
+   */
+  display: 'BungeeOutline_400Regular',
+  /** Small figures — rev counter, tiles — where a hollow face would close up. */
+  numeric: 'Rajdhani_700Bold',
   /** Labels and secondary text. */
   label: 'Rajdhani_600SemiBold',
 } as const;

@@ -5,29 +5,31 @@ import Svg, { Text as SvgText } from 'react-native-svg';
 import { FONT } from '../typography';
 
 /**
- * Hollow digits: stroked outline, no fill.
- *
- * On a windshield a solid number is a solid block of light, and the bigger it
- * is the more of the road it hides in the reflection. An outline puts the same
- * shape on the glass while leaving the middle of it transparent.
+ * Hollow digits, set in a face that is drawn as an outline rather than stroked
+ * into one. On a windshield a solid number is a solid block of light, and the
+ * bigger it is the more of the road it hides in the reflection.
  *
  * Each character gets its own fixed-width cell rather than being laid out as a
- * string. Two reasons: a stroked glyph is wider than the glyph itself, so
- * adjacent outlines collide at any weight worth reading at speed; and the width
- * of a run of text depends on which font actually resolved, which a guessed
- * multiplier gets wrong the moment a fallback steps in. Fixed cells also make
- * the digits tabular, so the number does not shuffle sideways as it changes.
+ * string, so nothing depends on knowing how wide a run of text will be in a
+ * font that may not be the one that loads. It also makes the digits tabular:
+ * the number does not shuffle sideways as it counts.
  *
- * React Native's own Text cannot stroke, so the digits are drawn as SVG.
+ * React Native's own Text cannot do any of this, so the digits are drawn as SVG.
  */
 
-/** Cell width as a share of the font size. Wide enough for any digit plus its stroke. */
-const CELL = 0.66;
+/** Cell width as a share of the font size. Bungee is a wide face. */
+const CELL = 0.88;
 
 /** Narrower cell for a decimal point, which needs almost none. */
-const DOT_CELL = 0.3;
+const DOT_CELL = 0.34;
 
-const STROKE = 0.04;
+/**
+ * A touch of stroke on top of the outline. The face's own line is a hairline,
+ * which goes spindly at the size a speed readout is drawn; this thickens the
+ * ring evenly without closing anything, because the counters are the hollow
+ * inside rather than the gaps in a stem.
+ */
+const WEIGHT = 0.014;
 
 export function OutlineNumber({
   value,
@@ -38,25 +40,24 @@ export function OutlineNumber({
   fontSize: number;
   color: string;
 }) {
-  const strokeWidth = fontSize * STROKE;
-  const height = fontSize * 1.08 + strokeWidth * 2;
-  const characters = value.split('');
+  const strokeWidth = fontSize * WEIGHT;
+  const height = fontSize * 1.12 + strokeWidth * 2;
 
   return (
     <View style={styles.row}>
-      {characters.map((character, index) => {
-        const width =
-          (character === '.' || character === ',' ? DOT_CELL : CELL) * fontSize + strokeWidth;
+      {value.split('').map((character, index) => {
+        const isDot = character === '.' || character === ',';
+        const width = (isDot ? DOT_CELL : CELL) * fontSize + strokeWidth;
 
         return (
           <Svg key={`${character}-${index}`} width={width} height={height}>
             <SvgText
               x={width / 2}
-              y={fontSize * 0.78 + strokeWidth}
+              y={fontSize * 0.82 + strokeWidth}
               fontSize={fontSize}
               fontFamily={FONT.display}
               textAnchor="middle"
-              fill="none"
+              fill={color}
               stroke={color}
               strokeWidth={strokeWidth}
               strokeLinejoin="round">

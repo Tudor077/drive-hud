@@ -64,5 +64,5 @@ const styles = StyleSheet.create({
   segment: { flex: 1, borderRadius: 2 },
   labels: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
   caption: { fontSize: 13, fontFamily: FONT.label, letterSpacing: 2 },
-  value: { fontSize: 22, fontFamily: FONT.display, fontVariant: ['tabular-nums'] },
+  value: { fontSize: 22, fontFamily: FONT.numeric, fontVariant: ['tabular-nums'] },
 });

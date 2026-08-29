@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
   label: { fontSize: 11, fontFamily: FONT.label, letterSpacing: 1.5 },
   value: {
     fontSize: 22,
-    fontFamily: FONT.display,
+    fontFamily: FONT.numeric,
     fontVariant: ['tabular-nums'],
   },
 });

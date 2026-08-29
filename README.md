@@ -43,10 +43,14 @@ the side drains with the distance left to it.
 The road and the speed hold their own halves of the screen — side by side in
 landscape, stacked in portrait — so no chevron is ever drawn across the digits.
 Numbers are hollow: a solid figure is a solid block of light, and on a
-windshield the bigger it is the more road it hides in the reflection. They are
-set in Rajdhani, a squared-off display face built for instrument panels and
-embedded at build time — react-native-svg resolves a family by asking the
-platform, so a runtime-loaded font would not reach the digits.
+windshield the bigger it is the more road it hides in the reflection. They are set in
+Bungee Outline, a face drawn *as* an outline rather than a solid one with a
+stroke laid over it: stroking a solid glyph fattens every stem and squeezes the
+counters shut, and the bigger the figure the worse it looks. Labels and the
+smaller figures stay in Rajdhani, where a hollow face would close up.
+
+Fonts are embedded at build time — react-native-svg resolves a family by asking
+the platform, so a runtime-loaded font would never reach the digits.
 
 On a bend a **warning board** stands at the corner — the chevron plate you get on
 the outside of a real bend. It is treated as an object at a fixed point rather
