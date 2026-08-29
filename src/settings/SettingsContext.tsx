@@ -8,7 +8,7 @@ import React, {
   useState,
 } from 'react';
 
-import { TintName } from '../theme';
+import { THEMES, Theme, TintName, ThemeMode, tintOf } from '../theme';
 import { SpeedUnit } from '../units';
 
 export type Settings = {
@@ -18,9 +18,12 @@ export type Settings = {
   mirrored: boolean;
   landscape: boolean;
   tint: TintName;
+  mode: ThemeMode;
   brightness: number;
   /** Warn above this speed, in the chosen unit. 0 disables the warning. */
   speedAlert: number;
+  /** Look the limit up from OpenStreetMap. Off by default: it uses data. */
+  speedLimits: boolean;
   obdEnabled: boolean;
   /** Remembered adapter, so the next drive reconnects without a scan. */
   obdDeviceId: string | null;
@@ -36,8 +39,10 @@ const DEFAULTS: Settings = {
   mirrored: false,
   landscape: true,
   tint: 'mint',
+  mode: 'night',
   brightness: 1,
   speedAlert: 0,
+  speedLimits: false,
   obdEnabled: false,
   obdDeviceId: null,
   obdDeviceName: null,
@@ -99,4 +104,13 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
 export function useSettings() {
   return useContext(SettingsContext);
+}
+
+/** The palette and accent for the mode currently chosen. */
+export function useTheme(): { theme: Theme; tint: string } {
+  const { settings } = useSettings();
+  return useMemo(
+    () => ({ theme: THEMES[settings.mode], tint: tintOf(settings.tint, settings.mode) }),
+    [settings.mode, settings.tint]
+  );
 }

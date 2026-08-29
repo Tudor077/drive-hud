@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Platform,
   Pressable,
@@ -14,10 +14,12 @@ import { forgetGearModel } from '../obd/useObd';
 import { parseInstruction } from '../nav/parseInstruction';
 import { useNavInstruction } from '../nav/useNavInstruction';
 import { openWaze } from '../nav/waze';
-import { useSettings } from '../settings/SettingsContext';
-import { TINTS, TintName, theme } from '../theme';
+import { useSettings, useTheme } from '../settings/SettingsContext';
+import { TINTS, ThemeMode, TintName, type Theme } from '../theme';
 
 export function SettingsScreen({ onClose }: { onClose: () => void }) {
+  const { theme, tint } = useTheme();
+  const styles = useStyles();
   const { settings, update } = useSettings();
   const nav = useNavInstruction(settings.navEnabled);
 
@@ -58,11 +60,20 @@ export function SettingsScreen({ onClose }: { onClose: () => void }) {
       <View style={styles.header}>
         <Text style={styles.title}>Settings</Text>
         <Pressable onPress={onClose} hitSlop={12} style={styles.done}>
-          <Text style={styles.doneText}>Done</Text>
+          <Text style={[styles.doneText, { color: tint }]}>Done</Text>
         </Pressable>
       </View>
 
       <Section title="Display">
+        <Choice
+          label="Mode"
+          options={[
+            { key: 'night', label: 'night' },
+            { key: 'day', label: 'day' },
+          ]}
+          value={settings.mode}
+          onChange={(key) => update({ mode: key as ThemeMode })}
+        />
         <Choice
           label="Units"
           options={[
@@ -111,8 +122,9 @@ export function SettingsScreen({ onClose }: { onClose: () => void }) {
       <Section title="Navigation">
         <Text style={styles.body}>
           Waze cannot be drawn inside another app — no public SDK exists for that. Instead, Drive HUD
-          reads the turn-by-turn notification Waze or Google Maps posts while navigating, and shows
-          the next manoeuvre here. Start the route in Waze as usual, then come back.
+          reads the turn-by-turn notification Waze or Google Maps posts while navigating, and draws
+          the road ahead from it: straight while the turn is far off, bending harder as it comes up.
+          Start the route in Waze as usual, then come back.
         </Text>
         <Toggle
           label="Show navigation strip"
@@ -123,7 +135,7 @@ export function SettingsScreen({ onClose }: { onClose: () => void }) {
           <Row
             label="Notification access"
             value={nav.hasPermission ? 'granted' : 'not granted'}
-            tone={nav.hasPermission ? theme.accent : theme.warn}
+            tone={nav.hasPermission ? tint : theme.warn}
             action={nav.hasPermission ? undefined : 'Grant'}
             onAction={() => nav.openSettings()}
           />
@@ -132,6 +144,21 @@ export function SettingsScreen({ onClose }: { onClose: () => void }) {
         )}
         <Button label="Open Waze" onPress={() => void openWaze()} />
         <NavDebug nav={nav} />
+      </Section>
+
+      <Section title="Speed limit">
+        <Text style={styles.body}>
+          A phone has no idea what the limit is, and there is no offline source on the device. This
+          looks the road up in OpenStreetMap, so it needs a connection — a few kilobytes every
+          hundred and fifty metres or so, never while it is switched off. Coverage is patchy: where
+          OpenStreetMap has no limit recorded, no sign is shown rather than a guess.
+        </Text>
+        <Toggle
+          label="Look up the limit"
+          hint="Off by default, because it uses mobile data."
+          value={settings.speedLimits}
+          onChange={(speedLimits) => update({ speedLimits })}
+        />
       </Section>
 
       <Section title="Engine data (OBD-II)">
@@ -149,7 +176,7 @@ export function SettingsScreen({ onClose }: { onClose: () => void }) {
         <Row
           label="Adapter"
           value={settings.obdDeviceName ?? 'none paired'}
-          tone={settings.obdDeviceName ? theme.accent : theme.dim}
+          tone={settings.obdDeviceName ? tint : theme.dim}
           action={settings.obdDeviceId ? 'Forget' : undefined}
           onAction={() => update({ obdDeviceId: null, obdDeviceName: null })}
         />
@@ -193,6 +220,8 @@ export function SettingsScreen({ onClose }: { onClose: () => void }) {
  * strip shows the wrong thing — or nothing — this is the only way to see why.
  */
 function NavDebug({ nav }: { nav: ReturnType<typeof useNavInstruction> }) {
+  const { theme, tint } = useTheme();
+  const styles = useStyles();
   const [open, setOpen] = useState(false);
   const raw = nav.raw;
 
@@ -222,12 +251,12 @@ function NavDebug({ nav }: { nav: ReturnType<typeof useNavInstruction> }) {
       <Row
         label="Listener running"
         value={nav.connected ? 'yes' : 'no'}
-        tone={nav.connected ? theme.accent : theme.warn}
+        tone={nav.connected ? tint : theme.warn}
       />
       <Row
         label="Last notification"
         value={raw ? raw.package : 'none seen yet'}
-        tone={raw ? theme.accent : theme.dim}
+        tone={raw ? tint : theme.dim}
         action={raw ? (open ? 'Hide' : 'Show') : undefined}
         onAction={() => setOpen((value) => !value)}
       />
@@ -248,6 +277,8 @@ function NavDebug({ nav }: { nav: ReturnType<typeof useNavInstruction> }) {
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  const { theme, tint } = useTheme();
+  const styles = useStyles();
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>{title}</Text>
@@ -267,6 +298,8 @@ function Toggle({
   value: boolean;
   onChange: (value: boolean) => void;
 }) {
+  const { theme, tint } = useTheme();
+  const styles = useStyles();
   return (
     <View style={styles.row}>
       <View style={styles.rowText}>
@@ -276,8 +309,8 @@ function Toggle({
       <Switch
         value={value}
         onValueChange={onChange}
-        trackColor={{ true: theme.accentDim, false: theme.border }}
-        thumbColor={value ? theme.accent : theme.dim}
+        trackColor={{ true: tint, false: theme.border }}
+        thumbColor={value ? tint : theme.dim}
       />
     </View>
   );
@@ -294,6 +327,8 @@ function Choice({
   value: string;
   onChange: (key: string) => void;
 }) {
+  const { theme, tint } = useTheme();
+  const styles = useStyles();
   return (
     <View style={styles.row}>
       <Text style={styles.label}>{label}</Text>
@@ -324,6 +359,8 @@ function Stepper({
   onDown: () => void;
   onUp: () => void;
 }) {
+  const { theme, tint } = useTheme();
+  const styles = useStyles();
   return (
     <View style={styles.row}>
       <Text style={styles.label}>{label}</Text>
@@ -353,6 +390,8 @@ function Row({
   action?: string;
   onAction?: () => void;
 }) {
+  const { theme, tint } = useTheme();
+  const styles = useStyles();
   return (
     <View style={styles.row}>
       <Text style={styles.label}>{label}</Text>
@@ -369,6 +408,8 @@ function Row({
 }
 
 function Button({ label, onPress }: { label: string; onPress: () => void }) {
+  const { theme, tint } = useTheme();
+  const styles = useStyles();
   return (
     <Pressable onPress={onPress} style={styles.button}>
       <Text style={styles.buttonText}>{label}</Text>
@@ -376,13 +417,14 @@ function Button({ label, onPress }: { label: string; onPress: () => void }) {
   );
 }
 
-const styles = StyleSheet.create({
+const buildStyles = (theme: Theme) =>
+  StyleSheet.create({
   root: { flex: 1, backgroundColor: theme.bg },
   content: { padding: 18, paddingBottom: 60, gap: 22 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   title: { color: theme.text, fontSize: 26, fontWeight: '800' },
   done: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8, backgroundColor: theme.surface },
-  doneText: { color: theme.accent, fontWeight: '800' },
+  doneText: { fontWeight: '800' },
   section: { gap: 10 },
   sectionTitle: {
     color: theme.dim,
@@ -412,7 +454,7 @@ const styles = StyleSheet.create({
     borderColor: theme.border,
     backgroundColor: theme.surface,
   },
-  chipOn: { borderColor: theme.accent, backgroundColor: theme.accentDim },
+  chipOn: { borderColor: theme.text, backgroundColor: theme.border },
   chipText: { color: theme.dim, fontWeight: '700', fontSize: 13 },
   chipTextOn: { color: theme.text },
   stepValue: {
@@ -448,9 +490,22 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: theme.accentDim,
+    borderColor: theme.border,
     backgroundColor: theme.surface,
   },
   adapterName: { color: theme.text, fontWeight: '700' },
   adapterMeta: { color: theme.dim, fontVariant: ['tabular-nums'] },
-});
+  });
+
+const STYLE_CACHE = new Map<ThemeMode, ReturnType<typeof buildStyles>>();
+
+function useStyles() {
+  const { theme } = useTheme();
+  return useMemo(() => {
+    const cached = STYLE_CACHE.get(theme.mode);
+    if (cached) return cached;
+    const built = buildStyles(theme);
+    STYLE_CACHE.set(theme.mode, built);
+    return built;
+  }, [theme]);
+}

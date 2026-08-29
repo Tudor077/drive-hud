@@ -7,6 +7,8 @@ export type SpeedState = {
   headingDeg: number | null;
   altitudeM: number | null;
   accuracyM: number | null;
+  latitude: number | null;
+  longitude: number | null;
   satellitesFixed: boolean;
   permission: 'unknown' | 'granted' | 'denied';
   error: string | null;
@@ -49,6 +51,8 @@ export function useSpeed(demoMode: boolean) {
     headingDeg: null,
     altitudeM: null,
     accuracyM: null,
+    latitude: null,
+    longitude: null,
     satellitesFixed: false,
     permission: 'unknown',
     error: null,
@@ -154,6 +158,8 @@ export function useSpeed(demoMode: boolean) {
               headingDeg: heading,
               altitudeM: altitude,
               accuracyM: accuracy,
+              latitude,
+              longitude,
               satellitesFixed: accuracy != null && accuracy < 50,
               error: null,
             }));

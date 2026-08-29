@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { theme } from '../theme';
+import type { Theme } from '../theme';
 
 export function SpeedReadout({
   value,
@@ -9,12 +9,14 @@ export function SpeedReadout({
   color,
   warning,
   fontSize,
+  theme,
 }: {
   value: number | null;
   unit: string;
   color: string;
   warning: boolean;
   fontSize: number;
+  theme: Theme;
 }) {
   const display = value == null ? '--' : String(Math.round(value));
   const tone = warning ? theme.danger : color;

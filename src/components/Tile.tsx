@@ -1,23 +1,26 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { theme } from '../theme';
+import type { Theme } from '../theme';
 
 export function Tile({
   label,
   value,
   tone,
+  theme,
 }: {
   label: string;
   value: string;
   tone?: string;
+  theme: Theme;
 }) {
   return (
-    <View style={styles.tile}>
-      <Text allowFontScaling={false} style={styles.label}>
+    <View
+      style={[styles.tile, { borderColor: theme.border, backgroundColor: theme.surface }]}>
+      <Text allowFontScaling={false} style={[styles.label, { color: theme.dim }]}>
         {label}
       </Text>
-      <Text allowFontScaling={false} style={[styles.value, tone ? { color: tone } : null]}>
+      <Text allowFontScaling={false} style={[styles.value, { color: tone ?? theme.text }]}>
         {value}
       </Text>
     </View>
@@ -31,12 +34,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: theme.border,
-    backgroundColor: theme.surface,
   },
-  label: { color: theme.dim, fontSize: 10, fontWeight: '700', letterSpacing: 1.5 },
+  label: { fontSize: 10, fontWeight: '700', letterSpacing: 1.5 },
   value: {
-    color: theme.text,
     fontSize: 20,
     fontWeight: '800',
     fontVariant: ['tabular-nums'],

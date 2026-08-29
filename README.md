@@ -15,6 +15,7 @@ below.
 | | Where it comes from | Needs |
 | --- | --- | --- |
 | Speed, heading, altitude, GPS accuracy | The phone's GNSS receiver | Location permission |
+| Posted speed limit | OpenStreetMap, looked up by position | A connection; off by default |
 | Trip distance, moving time, top speed | Integrated from the same fixes | — |
 | Next manoeuvre, distance, street, side-of-road hint | The ongoing notification Waze or Google Maps posts while navigating | Notification access (Android) |
 | RPM, gear, coolant, intake and outside air, throttle, engine load, fuel level, battery voltage | The car's ECU | An ELM327 Bluetooth **LE** adapter |
@@ -34,11 +35,10 @@ So the flow is: start the route in Waze as usual, switch to Drive HUD, and the
 manoeuvres appear here as Waze announces them. There is an **Open Waze** button
 in settings for the handover.
 
-The manoeuvre is drawn as a stretch of road in perspective, with one camera for
-everything in it. The markings are objects 20 m apart on the road surface,
-carried toward you at your GPS speed — at 72 km/h one passes per second, because
-that is how long 20 m takes. The road leans the way the route bends, at full
-strength however far off the turn is.
+The manoeuvre fills the screen as the road ahead, drawn as a still picture: the
+road is straight while the turn is more than 600 m off and the bend tightens as
+it comes up, so what you see is the shape of the road rather than an animation
+to interpret. The speed sits smaller in the middle of it.
 
 On a bend a **warning board** stands at the corner — the chevron plate you get on
 the outside of a real bend. It is treated as an object at a fixed point rather
@@ -59,6 +59,15 @@ another app's notifications, and there is no way around it.
 and temperatures need an OBD-II adapter in the socket under the dashboard — a
 generic ELM327 clone is around €10–20. Without one, those tiles simply do not
 appear.
+
+## Day and night
+
+Two palettes, for two different ways of using it. At night the phone lies on the
+dash and the windshield reflects it, so black is effectively transparent and only
+the lit parts show. In daylight that reflection washes out and the phone is read
+directly, where dark ink on white carries further under glare. Each accent colour
+has a dark twin for that reason — the colours that glow on black are close to
+invisible on white. ⚙ → Display → Mode.
 
 ## Install
 

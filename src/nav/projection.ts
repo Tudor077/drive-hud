@@ -94,31 +94,3 @@ export function boardDirection(maneuver: Maneuver): -1 | 1 {
   return maneuver.includes('left') || maneuver === 'uturn' ? -1 : 1;
 }
 
-/**
- * Road markings are objects in the same world as the board, so they use the
- * same projection. They sit a fixed distance apart along the road and are
- * carried toward the driver at road speed, which is what makes the flow match
- * the drive: at 72 km/h one passes every 1.2 seconds because that is how long
- * 24 m takes, not because a period was picked to look right.
- */
-export const MARK_COUNT = 6;
-export const MARK_RANGE_M = 120;
-export const MARK_SPACING_M = MARK_RANGE_M / MARK_COUNT;
-
-/** Markings fade in over the far end of their range rather than popping in. */
-const MARK_APPEAR_OVER_M = 34;
-
-export function markOpacity(distanceM: number): number {
-  const appearing = clamp01((MARK_RANGE_M - distanceM) / MARK_APPEAR_OVER_M);
-  const passing = clamp01((signScale(distanceM) - PASSING_SCALE) / PASSING_FADE);
-  return appearing * (1 - passing);
-}
-
-/**
- * How far a marking has swung toward the outside of the bend. Unlike the board
- * this is not scaled by how near the turn is: which way the road goes has to
- * read at any distance, or left and right look identical until the last 400 m.
- */
-export function markBend(distanceM: number): number {
-  return clamp01(distanceM / MARK_RANGE_M);
-}

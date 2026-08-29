@@ -4,23 +4,27 @@ import { useKeepAwake } from 'expo-keep-awake';
 import React, { useEffect } from 'react';
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 
-import { NavPanel } from '../components/NavPanel';
+import { RoadView } from '../components/RoadView';
 import { RpmBar } from '../components/RpmBar';
+import { SpeedLimitSign } from '../components/SpeedLimitSign';
 import { SpeedReadout } from '../components/SpeedReadout';
 import { Tile } from '../components/Tile';
 import { useSpeed } from '../location/useSpeed';
+import { useApproach } from '../nav/useApproach';
 import { useNavInstruction } from '../nav/useNavInstruction';
 import { useObd } from '../obd/useObd';
-import { useSettings } from '../settings/SettingsContext';
-import { TINTS, theme } from '../theme';
-import { compassPoint, distanceLabel, speedFromMs, speedLabel, tempLabel } from '../units';
+import { useSettings, useTheme } from '../settings/SettingsContext';
+import { useSpeedLimit } from '../speed/useSpeedLimit';
+import { compassPoint, distanceLabel, kmhTo, speedFromMs, speedLabel, tempLabel } from '../units';
 
 const REDLINE_RPM = 7000;
 
+const LANE_LABEL = { left: 'KEEP LEFT', center: 'MIDDLE LANE', right: 'KEEP RIGHT' } as const;
+
 export function HudScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
   const { settings } = useSettings();
+  const { theme, tint } = useTheme();
   const { width, height } = useWindowDimensions();
-  const color = TINTS[settings.tint];
 
   // The whole point of the app is a screen you glance at, never touch.
   useKeepAwake();
@@ -33,6 +37,9 @@ export function HudScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
     deviceName: settings.obdDeviceName,
   });
   const navigation = useNavInstruction(settings.navEnabled);
+  const nav = navigation.instruction;
+  const approach = useApproach(nav?.distanceM ?? null, gps.speedMs);
+  const posted = useSpeedLimit(settings.speedLimits, gps.latitude, gps.longitude);
 
   useEffect(() => {
     if (settings.landscape) {
@@ -43,33 +50,28 @@ export function HudScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
   }, [settings.landscape]);
 
   useEffect(() => {
-    // App-level brightness only — no permission needed, and it is restored when
-    // the app goes away.
+    // App-level brightness only, so no permission is needed and the system
+    // setting is restored when the app goes away.
     Brightness.setBrightnessAsync(settings.brightness).catch(() => {});
   }, [settings.brightness]);
 
   const speed = gps.speedMs == null ? null : speedFromMs(gps.speedMs, settings.unit);
-  const overLimit = settings.speedAlert > 0 && speed != null && speed > settings.speedAlert;
+  const limit = posted.kmh == null ? null : Math.round(kmhTo(posted.kmh, settings.unit));
+  const overPosted = limit != null && speed != null && speed > limit + 2;
+  const overSet = settings.speedAlert > 0 && speed != null && speed > settings.speedAlert;
 
-  const isLandscape = width > height;
-  const nav = navigation.instruction;
-
-  // The approaching warning board needs real depth to read, so with a route
-  // running the road view takes a column of its own and the speed gives up the
-  // space for it.
-  const navWidth = isLandscape ? width * 0.3 : width - 28;
-  const navHeight = isLandscape ? height - 74 : height * 0.36;
-
+  // With a route running the road fills the screen and the speed gives up the
+  // middle to it; on its own the speed is the whole display.
   const speedFont = nav
-    ? Math.min(width * (isLandscape ? 0.22 : 0.46), height * (isLandscape ? 0.42 : 0.22))
-    : Math.min(width * (isLandscape ? 0.3 : 0.55), height * (isLandscape ? 0.55 : 0.3));
+    ? Math.min(width, height) * 0.2
+    : Math.min(width * 0.42, height * 0.5);
 
   const { readings } = obd;
   const showObd = settings.obdEnabled && obd.status === 'live';
 
   const tiles: { label: string; value: string; tone?: string }[] = [];
   if (showObd) {
-    if (obd.gear != null) tiles.push({ label: 'GEAR', value: String(obd.gear), tone: color });
+    if (obd.gear != null) tiles.push({ label: 'GEAR', value: String(obd.gear), tone: tint });
     if (readings.coolant != null) {
       tiles.push({
         label: 'COOLANT',
@@ -79,9 +81,6 @@ export function HudScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
     }
     if (readings.throttle != null) {
       tiles.push({ label: 'THROTTLE', value: `${Math.round(readings.throttle)}%` });
-    }
-    if (readings.load != null) {
-      tiles.push({ label: 'LOAD', value: `${Math.round(readings.load)}%` });
     }
     if (readings.ambient != null) {
       tiles.push({ label: 'OUTSIDE', value: tempLabel(readings.ambient, settings.fahrenheit) });
@@ -109,65 +108,110 @@ export function HudScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
   else if (gps.accuracyM != null) status.push(`±${Math.round(gps.accuracyM)} m`);
   if (gps.headingDeg != null) status.push(compassPoint(gps.headingDeg));
   if (settings.obdEnabled && obd.status !== 'live') status.push(`OBD ${obd.status.toUpperCase()}`);
+  if (settings.showTrip) {
+    status.push(distanceLabel(gps.trip.distanceM, settings.unit));
+    status.push(`MAX ${Math.round(speedFromMs(gps.trip.maxSpeedMs, settings.unit))}`);
+  }
+
+  const trip = nav
+    ? [
+        nav.eta,
+        nav.remainingMinutes != null ? formatMinutes(nav.remainingMinutes) : null,
+        nav.remainingM != null ? distanceLabel(nav.remainingM, settings.unit) : null,
+      ].filter((value): value is string => Boolean(value))
+    : [];
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { backgroundColor: theme.bg }]}>
       <View
         pointerEvents="none"
-        style={[
-          styles.mirror,
-          settings.mirrored ? { transform: [{ scaleX: -1 }] } : null,
-        ]}>
-        <View style={[styles.main, isLandscape ? styles.mainRow : styles.mainColumn]}>
-          {nav ? (
-            <NavPanel
-              instruction={nav}
-              color={color}
-              unit={settings.unit}
-              speedMs={gps.speedMs}
-              width={navWidth}
-              height={navHeight}
-            />
-          ) : null}
-
-          <SpeedReadout
-            value={speed}
-            unit={speedLabel(settings.unit)}
-            color={color}
-            warning={overLimit}
-            fontSize={speedFont}
+        style={[styles.mirror, settings.mirrored ? { transform: [{ scaleX: -1 }] } : null]}>
+        {nav ? (
+          <RoadView
+            maneuver={nav.maneuver}
+            distanceM={nav.distanceM}
+            width={width}
+            height={height}
+            theme={theme}
+            tint={tint}
+            boardDistance={approach}
           />
+        ) : null}
 
-          {showObd ? (
-            <View style={styles.side}>
-              <RpmBar
-                rpm={readings.rpm ?? null}
-                redline={REDLINE_RPM}
-                color={color}
-                width={isLandscape ? width * 0.42 : width * 0.85}
+        {nav ? (
+          <View style={styles.header}>
+            <Text
+              allowFontScaling={false}
+              style={[styles.turnDistance, { color: tint, fontSize: Math.min(width, height) * 0.11 }]}>
+              {nav.distanceM != null
+                ? distanceLabel(nav.distanceM, settings.unit)
+                : (nav.distanceText ?? '')}
+            </Text>
+            {nav.street ? (
+              <Text allowFontScaling={false} numberOfLines={1} style={[styles.street, { color: theme.text }]}>
+                {nav.street}
+              </Text>
+            ) : null}
+            {nav.lane ? (
+              <Text allowFontScaling={false} style={[styles.lane, { color: tint }]}>
+                {LANE_LABEL[nav.lane]}
+              </Text>
+            ) : null}
+            {trip.length > 0 ? (
+              <Text allowFontScaling={false} style={[styles.trip, { color: theme.dim }]}>
+                {trip.join('  ·  ')}
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
+
+        <View style={styles.centre}>
+          <View style={styles.speedRow}>
+            <SpeedReadout
+              value={speed}
+              unit={speedLabel(settings.unit)}
+              color={tint}
+              warning={overSet || overPosted}
+              fontSize={speedFont}
+              theme={theme}
+            />
+            {limit != null ? (
+              <SpeedLimitSign
+                limitKmh={limit}
+                over={overPosted}
+                size={speedFont * 0.44}
+                theme={theme}
               />
-              <View style={styles.tiles}>
-                {tiles.map((tile) => (
-                  <Tile key={tile.label} label={tile.label} value={tile.value} tone={tile.tone} />
-                ))}
-              </View>
-            </View>
-          ) : null}
+            ) : null}
+          </View>
         </View>
 
         <View style={styles.footer}>
-          <Text allowFontScaling={false} style={styles.status}>
+          {showObd ? (
+            <>
+              <RpmBar
+                rpm={readings.rpm ?? null}
+                redline={REDLINE_RPM}
+                color={tint}
+                width={Math.min(width * 0.7, 420)}
+                theme={theme}
+              />
+              <View style={styles.tiles}>
+                {tiles.map((tile) => (
+                  <Tile
+                    key={tile.label}
+                    label={tile.label}
+                    value={tile.value}
+                    tone={tile.tone}
+                    theme={theme}
+                  />
+                ))}
+              </View>
+            </>
+          ) : null}
+          <Text allowFontScaling={false} style={[styles.status, { color: theme.dim }]}>
             {status.join('  ·  ')}
           </Text>
-          {settings.showTrip ? (
-            <Text allowFontScaling={false} style={styles.status}>
-              {distanceLabel(gps.trip.distanceM, settings.unit)}
-              {'  ·  MAX '}
-              {Math.round(speedFromMs(gps.trip.maxSpeedMs, settings.unit))}
-              {'  ·  '}
-              {formatDuration(gps.trip.movingSeconds)}
-            </Text>
-          ) : null}
         </View>
       </View>
 
@@ -177,7 +221,7 @@ export function HudScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
         hitSlop={16}
         style={styles.settingsButton}
         accessibilityLabel="Settings">
-        <Text allowFontScaling={false} style={styles.settingsGlyph}>
+        <Text allowFontScaling={false} style={[styles.settingsGlyph, { color: theme.text }]}>
           ⚙
         </Text>
       </Pressable>
@@ -185,27 +229,27 @@ export function HudScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
   );
 }
 
-function formatDuration(seconds: number): string {
-  const total = Math.round(seconds);
-  const hours = Math.floor(total / 3600);
-  const minutes = Math.floor((total % 3600) / 60);
-  return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+function formatMinutes(minutes: number): string {
+  if (minutes < 60) return `${minutes} min`;
+  return `${Math.floor(minutes / 60)} h ${minutes % 60} min`;
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: theme.bg },
-  mirror: { flex: 1, paddingHorizontal: 14, paddingVertical: 10, gap: 8 },
-  main: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  mainRow: { flexDirection: 'row', gap: 16 },
-  mainColumn: { flexDirection: 'column', gap: 12 },
-  side: { alignItems: 'center', gap: 14 },
+  root: { flex: 1 },
+  mirror: { flex: 1, paddingHorizontal: 14, paddingVertical: 8 },
+  header: { alignItems: 'center' },
+  turnDistance: { fontWeight: '900', fontVariant: ['tabular-nums'] },
+  street: { fontSize: 16, fontWeight: '700' },
+  lane: { fontSize: 11, fontWeight: '800', letterSpacing: 1.6, marginTop: 2 },
+  trip: { fontSize: 12, fontWeight: '600', marginTop: 2 },
+  centre: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  speedRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  footer: { alignItems: 'center', gap: 8 },
   tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center' },
-  footer: { gap: 2 },
   status: {
-    color: theme.dim,
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
-    letterSpacing: 1.5,
+    letterSpacing: 1.4,
     textAlign: 'center',
   },
   settingsButton: {
@@ -218,5 +262,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     opacity: 0.35,
   },
-  settingsGlyph: { color: theme.text, fontSize: 20 },
+  settingsGlyph: { fontSize: 20 },
 });

@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { theme } from '../theme';
+import type { Theme } from '../theme';
 
 const SEGMENTS = 18;
 
@@ -14,11 +14,13 @@ export function RpmBar({
   redline,
   color,
   width,
+  theme,
 }: {
   rpm: number | null;
   redline: number;
   color: string;
   width: number;
+  theme: Theme;
 }) {
   const ratio = rpm == null ? 0 : Math.max(0, Math.min(1, rpm / redline));
   const lit = Math.round(ratio * SEGMENTS);
@@ -44,7 +46,7 @@ export function RpmBar({
         })}
       </View>
       <View style={styles.labels}>
-        <Text allowFontScaling={false} style={styles.caption}>
+        <Text allowFontScaling={false} style={[styles.caption, { color: theme.dim }]}>
           RPM
         </Text>
         <Text allowFontScaling={false} style={[styles.value, { color }]}>
@@ -60,6 +62,6 @@ const styles = StyleSheet.create({
   bar: { flexDirection: 'row', gap: 3, height: 16 },
   segment: { flex: 1, borderRadius: 2 },
   labels: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-  caption: { color: theme.dim, fontSize: 12, fontWeight: '700', letterSpacing: 2 },
+  caption: { fontSize: 12, fontWeight: '700', letterSpacing: 2 },
   value: { fontSize: 20, fontWeight: '800', fontVariant: ['tabular-nums'] },
 });
