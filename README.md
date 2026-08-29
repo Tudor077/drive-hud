@@ -62,12 +62,18 @@ appear.
 
 ## Day and night
 
-Two palettes, for two different ways of using it. At night the phone lies on the
-dash and the windshield reflects it, so black is effectively transparent and only
-the lit parts show. In daylight that reflection washes out and the phone is read
-directly, where dark ink on white carries further under glare. Each accent colour
-has a dark twin for that reason — the colours that glow on black are close to
-invisible on white. ⚙ → Display → Mode.
+Always black, in both modes. A windshield reflects whatever the screen lights up,
+so black is effectively transparent and a light background would throw a bright
+rectangle back at the driver.
+
+What the mode changes is the colour of the light. **Night is red**, for the same
+reason cockpits and chart tables are: red barely touches the eye's dark
+adaptation, so the road outside stays as visible as it was. **Day is turquoise**,
+which holds up against sunlight where red washes out. ⚙ → Display → Mode.
+
+Warnings — over the limit, coolant too hot, battery low — are drawn in a colour
+set apart from the tint, amber at night and red by day, since a red warning
+against a red display says nothing.
 
 ## Install
 

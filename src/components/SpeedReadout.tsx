@@ -19,7 +19,7 @@ export function SpeedReadout({
   theme: Theme;
 }) {
   const display = value == null ? '--' : String(Math.round(value));
-  const tone = warning ? theme.danger : color;
+  const tone = warning ? theme.alert : color;
 
   return (
     <View style={styles.wrap}>

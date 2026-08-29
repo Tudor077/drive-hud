@@ -76,7 +76,7 @@ export function HudScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
       tiles.push({
         label: 'COOLANT',
         value: tempLabel(readings.coolant, settings.fahrenheit),
-        tone: readings.coolant > 105 ? theme.danger : undefined,
+        tone: readings.coolant > 105 ? theme.alert : undefined,
       });
     }
     if (readings.throttle != null) {
@@ -89,14 +89,14 @@ export function HudScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
       tiles.push({
         label: 'FUEL',
         value: `${Math.round(readings.fuel)}%`,
-        tone: readings.fuel < 12 ? theme.warn : undefined,
+        tone: readings.fuel < 12 ? theme.alert : undefined,
       });
     }
     if (readings.voltage != null) {
       tiles.push({
         label: 'BATTERY',
         value: `${readings.voltage.toFixed(1)}V`,
-        tone: readings.voltage < 11.9 ? theme.warn : undefined,
+        tone: readings.voltage < 11.9 ? theme.alert : undefined,
       });
     }
   }

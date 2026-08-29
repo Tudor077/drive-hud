@@ -1,10 +1,15 @@
 /**
- * Two palettes, because a HUD is used two very different ways.
+ * Always black. A HUD is a mirror: the windshield reflects only what the screen
+ * lights up, so black is effectively transparent and a light background would
+ * throw a bright rectangle back at the driver. There is no light theme, at
+ * night or in the day.
  *
- * At night the phone lies on the dash and the windshield reflects it: black is
- * effectively transparent, and only what the screen lights up is visible. In
- * daylight that reflection is washed out and the phone is read directly, where
- * dark ink on a white ground carries far further under sun glare.
+ * What the mode changes is the colour of the light.
+ *
+ * Night is red, the same reason cockpits and chart tables are: red light barely
+ * touches the eye's dark adaptation, so the road outside stays as visible as it
+ * was. Day is turquoise, which holds up against sunlight far better than red
+ * does and reads cleanly through a windshield reflection.
  */
 export type ThemeMode = 'night' | 'day';
 
@@ -15,50 +20,32 @@ export type Theme = {
   border: string;
   text: string;
   dim: string;
-  warn: string;
-  danger: string;
-  /** Drawn behind the road, so the chevrons keep contrast against it. */
-  road: string;
+  /** The colour everything is drawn in. */
+  tint: string;
+  /** Over the limit, too hot, too low — set apart from the tint on purpose. */
+  alert: string;
 };
 
 export const THEMES: Record<ThemeMode, Theme> = {
   night: {
     mode: 'night',
     bg: '#000000',
-    surface: '#0A0E12',
-    border: '#1C242C',
-    text: '#E8F6FF',
-    dim: '#6C7A87',
-    warn: '#FFB020',
-    danger: '#FF3B57',
-    road: '#0A0E12',
+    surface: '#140505',
+    border: '#3A1414',
+    text: '#FF7A7A',
+    dim: '#8C3C3C',
+    tint: '#FF2E2E',
+    // Amber, because a red warning against a red display says nothing.
+    alert: '#FFC53B',
   },
   day: {
     mode: 'day',
-    bg: '#FFFFFF',
-    surface: '#EDF1F5',
-    border: '#B6C2CD',
-    text: '#04070A',
-    dim: '#46525E',
-    warn: '#9A5A00',
-    danger: '#C41229',
-    road: '#E4EAF0',
+    bg: '#000000',
+    surface: '#04100F',
+    border: '#12423E',
+    text: '#A6F4EC',
+    dim: '#3F857E',
+    tint: '#2FE6D6',
+    alert: '#FF4438',
   },
 };
-
-export type TintName = 'mint' | 'cyan' | 'amber' | 'mono';
-
-/**
- * Each tint needs a dark twin: the colours that glow on black are close to
- * invisible on white, and the point of day mode is contrast.
- */
-export const TINTS: Record<TintName, Record<ThemeMode, string>> = {
-  mint: { night: '#3BE8B0', day: '#00674A' },
-  cyan: { night: '#54E6FF', day: '#005E77' },
-  amber: { night: '#FFC24B', day: '#7A4A00' },
-  mono: { night: '#EAF4FF', day: '#04070A' },
-};
-
-export function tintOf(name: TintName, mode: ThemeMode): string {
-  return (TINTS[name] ?? TINTS.mint)[mode];
-}

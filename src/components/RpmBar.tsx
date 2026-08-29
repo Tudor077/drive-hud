@@ -37,7 +37,7 @@ export function RpmBar({
               style={[
                 styles.segment,
                 {
-                  backgroundColor: on ? (isRed ? theme.danger : color) : theme.border,
+                  backgroundColor: on ? (isRed ? theme.alert : color) : theme.border,
                   opacity: on ? 1 : 0.45,
                 },
               ]}

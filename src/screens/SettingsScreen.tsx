@@ -15,7 +15,7 @@ import { parseInstruction } from '../nav/parseInstruction';
 import { useNavInstruction } from '../nav/useNavInstruction';
 import { openWaze } from '../nav/waze';
 import { useSettings, useTheme } from '../settings/SettingsContext';
-import { TINTS, ThemeMode, TintName, type Theme } from '../theme';
+import { ThemeMode, type Theme } from '../theme';
 
 export function SettingsScreen({ onClose }: { onClose: () => void }) {
   const { theme, tint } = useTheme();
@@ -68,8 +68,8 @@ export function SettingsScreen({ onClose }: { onClose: () => void }) {
         <Choice
           label="Mode"
           options={[
-            { key: 'night', label: 'night' },
-            { key: 'day', label: 'day' },
+            { key: 'night', label: 'night · red' },
+            { key: 'day', label: 'day · turquoise' },
           ]}
           value={settings.mode}
           onChange={(key) => update({ mode: key as ThemeMode })}
@@ -98,12 +98,6 @@ export function SettingsScreen({ onClose }: { onClose: () => void }) {
           label="Show trip totals"
           value={settings.showTrip}
           onChange={(showTrip) => update({ showTrip })}
-        />
-        <Choice
-          label="Colour"
-          options={(Object.keys(TINTS) as TintName[]).map((key) => ({ key, label: key }))}
-          value={settings.tint}
-          onChange={(key) => update({ tint: key as TintName })}
         />
         <Stepper
           label="Brightness"
@@ -135,7 +129,7 @@ export function SettingsScreen({ onClose }: { onClose: () => void }) {
           <Row
             label="Notification access"
             value={nav.hasPermission ? 'granted' : 'not granted'}
-            tone={nav.hasPermission ? tint : theme.warn}
+            tone={nav.hasPermission ? tint : theme.alert}
             action={nav.hasPermission ? undefined : 'Grant'}
             onAction={() => nav.openSettings()}
           />
@@ -251,7 +245,7 @@ function NavDebug({ nav }: { nav: ReturnType<typeof useNavInstruction> }) {
       <Row
         label="Listener running"
         value={nav.connected ? 'yes' : 'no'}
-        tone={nav.connected ? tint : theme.warn}
+        tone={nav.connected ? tint : theme.alert}
       />
       <Row
         label="Last notification"
@@ -473,7 +467,7 @@ const buildStyles = (theme: Theme) =>
     alignItems: 'center',
   },
   buttonText: { color: theme.text, fontWeight: '700' },
-  error: { color: theme.danger, fontSize: 13 },
+  error: { color: theme.alert, fontSize: 13 },
   debug: {
     color: theme.text,
     fontSize: 11,

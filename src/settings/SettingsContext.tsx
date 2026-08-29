@@ -8,7 +8,7 @@ import React, {
   useState,
 } from 'react';
 
-import { THEMES, Theme, TintName, ThemeMode, tintOf } from '../theme';
+import { THEMES, Theme, ThemeMode } from '../theme';
 import { SpeedUnit } from '../units';
 
 export type Settings = {
@@ -17,7 +17,6 @@ export type Settings = {
   /** Flip horizontally so the reflection in the windshield reads correctly. */
   mirrored: boolean;
   landscape: boolean;
-  tint: TintName;
   mode: ThemeMode;
   brightness: number;
   /** Warn above this speed, in the chosen unit. 0 disables the warning. */
@@ -38,7 +37,6 @@ const DEFAULTS: Settings = {
   fahrenheit: false,
   mirrored: false,
   landscape: true,
-  tint: 'mint',
   mode: 'night',
   brightness: 1,
   speedAlert: 0,
@@ -106,11 +104,9 @@ export function useSettings() {
   return useContext(SettingsContext);
 }
 
-/** The palette and accent for the mode currently chosen. */
+/** The palette for the mode currently chosen. */
 export function useTheme(): { theme: Theme; tint: string } {
   const { settings } = useSettings();
-  return useMemo(
-    () => ({ theme: THEMES[settings.mode], tint: tintOf(settings.tint, settings.mode) }),
-    [settings.mode, settings.tint]
-  );
+  const theme = THEMES[settings.mode];
+  return useMemo(() => ({ theme, tint: theme.tint }), [theme]);
 }
