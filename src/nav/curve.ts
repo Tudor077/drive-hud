@@ -69,3 +69,15 @@ export function chevronPlacements(geometry: RoadGeometry): Placement[] {
     return { x, y, scale: 1 - 0.8 * t, angleDeg };
   });
 }
+
+/**
+ * How much of the run-up to the turn is left, 1 at {@link STRAIGHT_UNTIL_M} and
+ * 0 at the turn itself. Drives the distance bar, which drains as you close in.
+ *
+ * Linear on purpose, unlike the bend: a bar is read as a quantity, so it should
+ * fall at the rate the distance does rather than being shaped for effect.
+ */
+export function approachFraction(distanceM: number | null): number {
+  if (distanceM == null) return 0;
+  return Math.max(0, Math.min(1, distanceM / STRAIGHT_UNTIL_M));
+}

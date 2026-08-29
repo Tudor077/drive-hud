@@ -35,10 +35,15 @@ So the flow is: start the route in Waze as usual, switch to Drive HUD, and the
 manoeuvres appear here as Waze announces them. There is an **Open Waze** button
 in settings for the handover.
 
-The manoeuvre fills the screen as the road ahead, drawn as a still picture: the
-road is straight while the turn is more than 600 m off and the bend tightens as
-it comes up, so what you see is the shape of the road rather than an animation
-to interpret. The speed sits smaller in the middle of it.
+The manoeuvre is drawn as the road ahead, as a still picture: straight while the
+turn is more than 600 m off, the bend tightening as it comes up, so what you see
+is the shape of the road rather than an animation to interpret. A thin bar down
+the side drains with the distance left to it.
+
+The road and the speed hold their own halves of the screen — side by side in
+landscape, stacked in portrait — so no chevron is ever drawn across the digits.
+Numbers are hollow: a solid figure is a solid block of light, and on a
+windshield the bigger it is the more road it hides in the reflection.
 
 On a bend a **warning board** stands at the corner — the chevron plate you get on
 the outside of a real bend. It is treated as an object at a fixed point rather

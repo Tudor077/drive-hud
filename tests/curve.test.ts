@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { STRAIGHT_UNTIL_M, bendProgress, chevronPlacements } from '../src/nav/curve.ts';
+import {
+  STRAIGHT_UNTIL_M,
+  approachFraction,
+  bendProgress,
+  chevronPlacements,
+} from '../src/nav/curve.ts';
 
 const geometry = (bendX: number) => ({
   width: 400,
@@ -70,4 +75,16 @@ test('the near end of the road stays put however sharp the bend', () => {
   const straight = chevronPlacements(geometry(0))[0];
   const bent = chevronPlacements(geometry(200))[0];
   assert.ok(Math.abs(bent.x - straight.x) < 6, 'the nearest chevron should barely move');
+});
+
+test('the distance bar drains at the rate the distance falls', () => {
+  // Linear, unlike the bend: a bar is read as a quantity.
+  assert.equal(approachFraction(STRAIGHT_UNTIL_M), 1);
+  assert.equal(approachFraction(STRAIGHT_UNTIL_M / 2), 0.5);
+  assert.equal(approachFraction(0), 0);
+});
+
+test('the bar is full before the run-up starts and empty with no turn', () => {
+  assert.equal(approachFraction(5000), 1);
+  assert.equal(approachFraction(null), 0);
 });
