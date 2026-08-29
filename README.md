@@ -66,9 +66,13 @@ Grab `DriveHUD.apk` from the latest [release](../../releases/latest), or from
 the artifacts of any [Actions run](../../actions). Allow installs from your
 browser when Android prompts.
 
-The published APK is signed with the standard Expo debug key. That is fine for
-sideloading and upgrades in place; it is not suitable for the Play Store. See
-*Signing* below.
+The published APK carries native code for **arm64-v8a only**. Every Android phone
+sold for years is 64-bit ARM, and dropping the other three ABIs — one obsolete
+32-bit target and two emulator ones — takes most of the download away. To build
+for an emulator, add its ABI to `ARCHITECTURES` in the workflow.
+
+It is signed with the standard Expo debug key. That is fine for sideloading and
+upgrades in place; it is not suitable for the Play Store. See *Signing* below.
 
 ## First run
 

@@ -35,6 +35,11 @@ jobs:
     env:
       # `secrets` cannot be read from a step-level `if`, so it is surfaced here.
       HAS_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+      # Ship native code for 64-bit ARM only. Every Android phone sold for years
+      # is arm64; the other three ABIs are an old 32-bit target and two
+      # emulator ones, and they were most of the download. Add them back here
+      # (comma separated) to build for an emulator.
+      ARCHITECTURES: arm64-v8a
     steps:
       - uses: actions/checkout@v4
 
@@ -87,12 +92,16 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         working-directory: android
-        run: ./gradlew assembleRelease --no-daemon --build-cache
+        run: |
+          ./gradlew assembleRelease --no-daemon --build-cache \
+            -PreactNativeArchitectures="$ARCHITECTURES"
 
       - name: Name the APK
         run: |
           mkdir -p dist
           cp android/app/build/outputs/apk/release/app-release.apk "dist/DriveHUD.apk"
+          ls -l dist/DriveHUD.apk
+          echo "APK: $(du -h dist/DriveHUD.apk | cut -f1) for $ARCHITECTURES" >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@v4
         with:
