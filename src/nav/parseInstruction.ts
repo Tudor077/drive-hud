@@ -31,6 +31,12 @@ export type Instruction = {
   distanceText: string | null;
   street: string | null;
   source: string;
+  /** Clock time of arrival, as the app worded it. */
+  eta: string | null;
+  /** Minutes left on the whole route, not to the next turn. */
+  remainingMinutes: number | null;
+  /** Metres left on the whole route, not to the next turn. */
+  remainingM: number | null;
 };
 
 /**
@@ -43,6 +49,18 @@ export type Instruction = {
 const ETA_PHRASE =
   /\b(?:arriv\S*|arrival|eta|sosire|sose\S*|άφιξη)\b[^·|,;]{0,12}\d{1,2}[:.]\d{2}\s*(?:am|pm)?/gi;
 const CLOCK_TIME = /\b\d{1,2}[:.]\d{2}\b/g;
+
+/** The arrival clock time itself, which is worth showing even though the
+ *  wording around it has to be stripped before reading the manoeuvre. */
+const ETA_TIME = /\b(\d{1,2}[:.]\d{2})\s*(am|pm)?/i;
+
+/**
+ * Time left on the route: "12 min", "1 h 12 min", "1 oră 5 min", "12 λεπτά".
+ * Its presence is also what marks a field as being about the whole trip rather
+ * than the next turn — the two carry distances that look identical otherwise.
+ */
+const DURATION =
+  /(?:(\d+)\s*(?:h|hr|hours?|ore|oră|ώρ\S*)\s*)?(\d+)\s*(?:min\S*|λεπτ\S*)(?![\p{L}])/iu;
 
 export function stripEta(text: string): string {
   return text.replace(ETA_PHRASE, ' ').replace(CLOCK_TIME, ' ');
@@ -166,8 +184,29 @@ export function parseInstruction(notification: NavNotification): Instruction | n
     }
   }
 
-  const match = joined.match(DISTANCE);
+  // A field carrying a duration is the trip summary — "12 min · 4.2 km · 14:35"
+  // — and the distance in it is how far is left overall. Reading that as the
+  // distance to the next turn would put the whole remaining route on the board.
+  const tripFields = fields.filter((field) => DURATION.test(field));
+  const turnFields = fields.filter((field) => !DURATION.test(field));
+
+  const turnText = stripEta((turnFields.length > 0 ? turnFields : fields).join(' · '));
+  const match = turnText.match(DISTANCE);
   const distanceM = match ? toMeters(Number(match[1].replace(',', '.')), match[2]) : null;
+
+  const trip = tripFields.join(' · ');
+  const durationMatch = trip.match(DURATION);
+  const remainingMinutes = durationMatch
+    ? Number(durationMatch[1] ?? 0) * 60 + Number(durationMatch[2])
+    : null;
+
+  const remainingMatch = stripEta(trip).match(DISTANCE);
+  const remainingM = remainingMatch
+    ? toMeters(Number(remainingMatch[1].replace(',', '.')), remainingMatch[2])
+    : null;
+
+  const etaMatch = fields.join(' · ').match(ETA_TIME);
+  const eta = etaMatch ? `${etaMatch[1]}${etaMatch[2] ? ` ${etaMatch[2]}` : ''}` : null;
 
   // The street is the wordiest field that is not just a distance or an ETA.
   const named = (standard.length > 0 ? standard : fromExtras)
@@ -182,5 +221,8 @@ export function parseInstruction(notification: NavNotification): Instruction | n
     distanceText: match ? `${match[1]} ${match[2]}` : null,
     street: named[0] ?? null,
     source: SOURCES[notification.package] ?? 'Navigation',
+    eta,
+    remainingMinutes,
+    remainingM,
   };
 }

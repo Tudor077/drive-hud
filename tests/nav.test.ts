@@ -168,3 +168,46 @@ test('reads wording an app hid in its own extras', () => {
 test('gives up when the notification carries no text at all', () => {
   assert.equal(parseInstruction(notification({ extras: {} })), null);
 });
+
+test('keeps the turn distance apart from the distance left on the route', () => {
+  // Both look like a distance. The field carrying a duration is the trip
+  // summary, so its distance is the route remainder, never the next turn.
+  const parsed = parseInstruction(
+    notification({
+      package: 'com.google.android.apps.maps',
+      title: 'Turn right onto Ermou',
+      text: '300 m',
+      subText: '12 min · 4.2 km · Arrive at 14:35',
+    })
+  )!;
+  assert.equal(parsed.distanceM, 300);
+  assert.equal(parsed.remainingM, 4200);
+  assert.equal(parsed.remainingMinutes, 12);
+  assert.equal(parsed.eta, '14:35');
+});
+
+test('does not take the route remainder as the turn distance', () => {
+  // The turn distance is missing here; the remainder must not stand in for it.
+  const parsed = parseInstruction(
+    notification({ title: 'Continue straight', text: '25 min · 18 km · 09:40' })
+  )!;
+  assert.equal(parsed.remainingM, 18000);
+  assert.equal(parsed.remainingMinutes, 25);
+  assert.notEqual(parsed.distanceM, 18000);
+});
+
+test('reads an hour-and-minutes duration', () => {
+  const parsed = parseInstruction(
+    notification({ title: 'Turn left', text: '200 m', subText: '1 h 12 min · 96 km' })
+  )!;
+  assert.equal(parsed.remainingMinutes, 72);
+  assert.equal(parsed.distanceM, 200);
+});
+
+test('has no trip figures when the app did not give any', () => {
+  const parsed = parseInstruction(notification({ title: 'Turn right', text: '300 m' }))!;
+  assert.equal(parsed.eta, null);
+  assert.equal(parsed.remainingMinutes, null);
+  assert.equal(parsed.remainingM, null);
+  assert.equal(parsed.distanceM, 300);
+});
