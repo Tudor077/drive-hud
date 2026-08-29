@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.ts",
   "dependencies": {
-    "@expo-google-fonts/bungee-outline": "^0.4.1",
+    "@expo-google-fonts/michroma": "^0.4.2",
     "@expo-google-fonts/rajdhani": "^0.4.1",
     "@react-native-async-storage/async-storage": "~3.1.1",
     "expo": "~57.0.16",

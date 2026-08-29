@@ -2,7 +2,7 @@ import React from 'react';
 import Svg, { Circle, Text as SvgText } from 'react-native-svg';
 
 import type { Theme } from '../theme';
-import { FONT } from '../typography';
+import { FONT, MICHROMA } from '../typography';
 
 /**
  * The round posted-limit sign: a ring around a number, so it reads as a limit
@@ -12,6 +12,12 @@ import { FONT } from '../typography';
  * bounced off the windshield straight back at the driver. The face stays empty
  * and the ring carries the meaning instead.
  */
+const RING_RADIUS = 38;
+const RING_WIDTH = 8;
+
+/** Clear width inside the ring, in the 100-unit box, with a margin. */
+const CLEAR_WIDTH = (RING_RADIUS - RING_WIDTH / 2) * 2 * 0.94;
+
 export function SpeedLimitSign({
   limitKmh,
   over,
@@ -26,24 +32,29 @@ export function SpeedLimitSign({
 }) {
   // Deliberately not the tint: at night the whole display is already red.
   const colour = over ? theme.alert : theme.tint;
+  const figures = String(limitKmh);
+
+  // Sized from the measured ink so a three-figure limit fits the ring instead
+  // of running out through it.
+  const perDigit = MICHROMA.inkWidth + 0.06;
+  const fontSize = Math.min(34, CLEAR_WIDTH / (figures.length * perDigit));
+  const baseline = 50 + fontSize * (MICHROMA.inkTop - MICHROMA.inkBottom) / 2 + fontSize * MICHROMA.inkBottom;
 
   return (
     <Svg width={size} height={size} viewBox="0 0 100 100">
       <Circle cx={50} cy={50} r={46} stroke={colour} strokeWidth={3} strokeOpacity={0.3} fill="none" />
-      <Circle cx={50} cy={50} r={38} stroke={colour} strokeWidth={9} fill="none" />
+      <Circle cx={50} cy={50} r={RING_RADIUS} stroke={colour} strokeWidth={RING_WIDTH} fill="none" />
       <SvgText
         x={50}
-        y={64}
-        // Sized down for a three-figure limit, which is wide in this face and
-        // would otherwise run out through the ring.
-        fontSize={String(limitKmh).length > 2 ? 26 : 36}
+        y={baseline}
+        fontSize={fontSize}
         fontFamily={FONT.display}
         textAnchor="middle"
-        fill={colour}
+        fill="none"
         stroke={colour}
-        strokeWidth={0.7}
+        strokeWidth={fontSize * 0.055}
         strokeLinejoin="round">
-        {String(limitKmh)}
+        {figures}
       </SvgText>
     </Svg>
   );

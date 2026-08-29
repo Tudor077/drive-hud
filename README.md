@@ -44,10 +44,17 @@ The road and the speed hold their own halves of the screen — side by side in
 landscape, stacked in portrait — so no chevron is ever drawn across the digits.
 Numbers are hollow: a solid figure is a solid block of light, and on a
 windshield the bigger it is the more road it hides in the reflection. They are set in
-Bungee Outline, a face drawn *as* an outline rather than a solid one with a
-stroke laid over it: stroking a solid glyph fattens every stem and squeezes the
-counters shut, and the bigger the figure the worse it looks. Labels and the
-smaller figures stay in Rajdhani, where a hollow face would close up.
+Michroma, whose wide geometric counters stay open when the glyph is stroked into
+a hollow one. Labels and the smaller figures stay in Rajdhani, which fits where a
+wide face would not.
+
+Each figure is centred in its own cell, sized from ink widths measured out of the
+font file rather than from the advance widths. A display face carries generous
+side bearings — Michroma's digits advance up to 1.0 em but paint only 0.875 —
+and laying them out by advance stacks that built-in space on top of the layout's
+own. Sizing by the ink drops it, leaving the spacing set deliberately in one
+constant. It also makes the digits tabular, so the number does not shuffle
+sideways as it counts.
 
 Fonts are embedded at build time — react-native-svg resolves a family by asking
 the platform, so a runtime-loaded font would never reach the digits.
