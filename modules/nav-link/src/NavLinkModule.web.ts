@@ -19,6 +19,10 @@ class NavLinkModule extends NativeModule<NavLinkModuleEvents> {
   getLastInstruction(): NavNotification | null {
     return null;
   }
+
+  isConnected(): boolean {
+    return false;
+  }
 }
 
 export default registerWebModule(NavLinkModule, 'NavLinkModule');

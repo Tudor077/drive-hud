@@ -1,6 +1,7 @@
 package expo.modules.navlink
 
 import android.app.Notification
+import android.os.Bundle
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 
@@ -25,16 +26,24 @@ class NavNotificationListenerService : NotificationListenerService() {
   override fun onNotificationPosted(sbn: StatusBarNotification) {
     val packageName = sbn.packageName ?: return
     if (!NavBus.isNavPackage(packageName)) return
-    val extras = sbn.notification?.extras ?: return
+    val notification = sbn.notification ?: return
+    val extras = notification.extras ?: Bundle()
 
     NavBus.update(
       mapOf(
         "package" to packageName,
-        "title" to extras.getCharSequence(Notification.EXTRA_TITLE)?.toString(),
-        "text" to extras.getCharSequence(Notification.EXTRA_TEXT)?.toString(),
-        "subText" to extras.getCharSequence(Notification.EXTRA_SUB_TEXT)?.toString(),
-        "bigText" to extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString(),
-        "infoText" to extras.getCharSequence(Notification.EXTRA_INFO_TEXT)?.toString(),
+        "title" to extras.text(Notification.EXTRA_TITLE),
+        "text" to extras.text(Notification.EXTRA_TEXT),
+        "subText" to extras.text(Notification.EXTRA_SUB_TEXT),
+        "bigText" to extras.text(Notification.EXTRA_BIG_TEXT),
+        "infoText" to extras.text(Notification.EXTRA_INFO_TEXT),
+        "summaryText" to extras.text(Notification.EXTRA_SUMMARY_TEXT),
+        "ticker" to notification.tickerText?.toString(),
+        // Apps that draw their own notification layout leave the standard
+        // fields empty and put the wording in extras of their own, under keys
+        // only they know. Rather than guess at the names, hand over every
+        // readable string and let the parser — and the debug screen — decide.
+        "extras" to extras.readableStrings(),
         "postedAt" to sbn.postTime.toDouble(),
         "ongoing" to sbn.isOngoing
       )
@@ -46,4 +55,45 @@ class NavNotificationListenerService : NotificationListenerService() {
     if (!NavBus.isNavPackage(packageName)) return
     NavBus.clear(packageName)
   }
+}
+
+private fun Bundle.text(key: String): String? = getCharSequence(key)?.toString()
+
+/** Keys that only ever hold framework bookkeeping, never anything a driver reads. */
+private val IGNORED_KEYS = setOf(
+  "android.appInfo",
+  "android.template",
+  "android.icon",
+  "android.largeIcon",
+  "android.largeIcon.big",
+  "android.contains.customView",
+  "android.rebuild.applicationInfo",
+  "android.support.v4.app.extra.COMPAT_TEMPLATE"
+)
+
+/** Longest string worth forwarding; notification extras can hold whole articles. */
+private const val MAX_VALUE_LENGTH = 200
+
+private fun Bundle.readableStrings(): Map<String, String> {
+  val out = mutableMapOf<String, String>()
+  for (key in keySet()) {
+    if (key in IGNORED_KEYS) continue
+    val value = try {
+      @Suppress("DEPRECATION")
+      get(key)
+    } catch (_: Throwable) {
+      null
+    }
+
+    val text = when (value) {
+      is CharSequence -> value.toString()
+      is Array<*> -> value.filterIsInstance<CharSequence>().joinToString(" · ")
+      else -> null
+    }
+
+    if (!text.isNullOrBlank()) {
+      out[key] = text.take(MAX_VALUE_LENGTH)
+    }
+  }
+  return out
 }

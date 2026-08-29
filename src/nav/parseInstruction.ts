@@ -34,16 +34,39 @@ export type Instruction = {
 };
 
 /**
+ * Every navigation notification carries an estimated time of arrival, and in
+ * several languages it is worded with the verb "arrive": "Arrive at 14:35".
+ * Left in, that turns every single instruction on a route into an arrival.
+ * Strip the ETA before reading the wording, and match arrival on having
+ * actually arrived rather than on the word alone.
+ */
+const ETA_PHRASE =
+  /\b(?:arriv\S*|arrival|eta|sosire|sose\S*|άφιξη)\b[^·|,;]{0,12}\d{1,2}[:.]\d{2}\s*(?:am|pm)?/gi;
+const CLOCK_TIME = /\b\d{1,2}[:.]\d{2}\b/g;
+
+export function stripEta(text: string): string {
+  return text.replace(ETA_PHRASE, ' ').replace(CLOCK_TIME, ' ');
+}
+
+/**
  * Navigation apps write their notification in the phone's language, so the
  * manoeuvre has to be recognised by wording. English, Romanian and Greek are
  * covered; anything unrecognised still shows its text, just without an arrow.
+ *
+ * Order matters: the first match wins, so the specific readings come before the
+ * general ones — a roundabout exit is a roundabout, not an exit, and "keep
+ * right to take exit 12" is an exit, not a lane change.
  */
 const KEYWORDS: [Maneuver, RegExp][] = [
+  [
+    'arrive',
+    /you have arrived|arriving now|arrive at your destination|destination (?:is )?(?:on the (?:left|right)|ahead|reached)|a[țt]i ajuns|ai ajuns|φτάσατε|έχετε φτάσει/i,
+  ],
   ['uturn', /\bu-?turn|întoarce|αναστροφ/i],
   ['roundabout', /roundabout|rotund|sens girato|κυκλικ/i],
   ['exit', /\bexit\b|ieși|ieșire|έξοδο/i],
-  ['merge', /\bmerge\b|încadr|συγχών/i],
-  ['arrive', /arriv|destination|ai ajuns|destinaț|άφιξη|προορισμ/i],
+  // Romanian "merge" means "it goes", so only the English phrasal use counts.
+  ['merge', /\bmerge (?:onto|left|right|with)\b|încadr|συγχών/i],
   ['sharp-left', /sharp left|strâns.*stânga|απότομα αριστερ/i],
   ['sharp-right', /sharp right|strâns.*dreapta|απότομα δεξ/i],
   ['slight-left', /slight.*left|keep left|ușor.*stânga|ține stânga|ελαφρ.*αριστερ|αριστερά/i],
@@ -112,17 +135,28 @@ const SOURCES: Record<string, string> = {
 };
 
 export function parseInstruction(notification: NavNotification): Instruction | null {
-  const fields = [
+  // The fields a well-behaved notification fills in, in the order a driver
+  // would read them.
+  const standard = [
     notification.title,
     notification.text,
     notification.bigText,
     notification.subText,
     notification.infoText,
+    notification.summaryText,
+    notification.ticker,
   ].filter((value): value is string => Boolean(value && value.trim()));
 
+  // Apps that draw their own notification layout leave those empty, so fall
+  // back to whatever strings they did carry.
+  const fromExtras = Object.values(notification.extras ?? {}).filter(
+    (value) => value.trim() && !standard.includes(value)
+  );
+
+  const fields = [...standard, ...fromExtras];
   if (fields.length === 0) return null;
 
-  const joined = fields.join(' · ');
+  const joined = stripEta(fields.join(' · '));
 
   let maneuver: Maneuver = 'unknown';
   for (const [candidate, pattern] of KEYWORDS) {
@@ -136,18 +170,17 @@ export function parseInstruction(notification: NavNotification): Instruction | n
   const distanceM = match ? toMeters(Number(match[1].replace(',', '.')), match[2]) : null;
 
   // The street is the wordiest field that is not just a distance or an ETA.
-  const street =
-    fields
-      .filter((field) => !DISTANCE.test(field) || field.replace(DISTANCE, '').trim().length > 3)
-      .sort((a, b) => b.length - a.length)[0] ?? null;
+  const named = (standard.length > 0 ? standard : fromExtras)
+    .map((field) => stripEta(field).trim())
+    .filter((field) => field && (!DISTANCE.test(field) || field.replace(DISTANCE, '').trim().length > 3))
+    .sort((a, b) => b.length - a.length);
 
   return {
     maneuver,
     lane: parseLane(joined),
     distanceM,
     distanceText: match ? `${match[1]} ${match[2]}` : null,
-    street: street?.trim() ?? null,
+    street: named[0] ?? null,
     source: SOURCES[notification.package] ?? 'Navigation',
   };
 }
-

@@ -10,6 +10,7 @@ type NavLinkApi = {
   hasPermission(): boolean;
   openPermissionSettings(): boolean;
   getLastInstruction(): NavNotification | null;
+  isConnected(): boolean;
   addListener(
     event: 'onNavigationUpdate',
     listener: (payload: NavNotification) => void
@@ -23,6 +24,7 @@ const UNAVAILABLE: NavLinkApi = {
   hasPermission: () => false,
   openPermissionSettings: () => false,
   getLastInstruction: () => null,
+  isConnected: () => false,
   addListener: () => ({ remove() {} }),
   addClearedListener: () => ({ remove() {} }),
 };
@@ -44,6 +46,7 @@ function load(): NavLinkApi {
       hasPermission: () => native.hasPermission(),
       openPermissionSettings: () => native.openPermissionSettings(),
       getLastInstruction: () => native.getLastInstruction(),
+      isConnected: () => native.isConnected(),
       addListener: (event, listener) => native.addListener(event, listener),
       addClearedListener: (listener) => native.addListener('onNavigationCleared', listener),
     };

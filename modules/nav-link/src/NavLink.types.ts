@@ -6,6 +6,14 @@ export type NavNotification = {
   subText: string | null;
   bigText: string | null;
   infoText: string | null;
+  summaryText: string | null;
+  ticker: string | null;
+  /**
+   * Every readable string the notification carried, keyed by its extras key.
+   * Apps that draw a custom notification layout leave the standard fields empty
+   * and put the wording here under names only they know.
+   */
+  extras: Record<string, string>;
   postedAt: number;
   ongoing: boolean;
 };

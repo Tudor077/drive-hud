@@ -11,6 +11,7 @@ import {
 
 import { ScannedAdapter, ensureBluetoothPermissions, scanForAdapters } from '../obd/bleTransport';
 import { forgetGearModel } from '../obd/useObd';
+import { parseInstruction } from '../nav/parseInstruction';
 import { useNavInstruction } from '../nav/useNavInstruction';
 import { openWaze } from '../nav/waze';
 import { useSettings } from '../settings/SettingsContext';
@@ -130,6 +131,7 @@ export function SettingsScreen({ onClose }: { onClose: () => void }) {
           <Row label="Notification access" value="Android only" tone={theme.dim} />
         )}
         <Button label="Open Waze" onPress={() => void openWaze()} />
+        <NavDebug nav={nav} />
       </Section>
 
       <Section title="Engine data (OBD-II)">
@@ -182,6 +184,66 @@ export function SettingsScreen({ onClose }: { onClose: () => void }) {
         />
       </Section>
     </ScrollView>
+  );
+}
+
+/**
+ * What the navigation app actually sent, verbatim. Every app words its
+ * notification differently and some hide it in extras of their own, so when the
+ * strip shows the wrong thing — or nothing — this is the only way to see why.
+ */
+function NavDebug({ nav }: { nav: ReturnType<typeof useNavInstruction> }) {
+  const [open, setOpen] = useState(false);
+  const raw = nav.raw;
+
+  if (!nav.supported) return null;
+
+  const lines: string[] = [];
+  if (raw) {
+    const parsed = parseInstruction(raw);
+    lines.push(`package: ${raw.package}`);
+    lines.push(`age: ${Math.round((Date.now() - raw.postedAt) / 1000)}s ago`);
+    for (const key of ['title', 'text', 'bigText', 'subText', 'infoText', 'summaryText', 'ticker'] as const) {
+      if (raw[key]) lines.push(`${key}: ${raw[key]}`);
+    }
+    for (const [key, value] of Object.entries(raw.extras ?? {})) {
+      lines.push(`extras.${key}: ${value}`);
+    }
+    lines.push('');
+    lines.push(
+      parsed
+        ? `parsed: ${parsed.maneuver} · ${parsed.distanceText ?? 'no distance'} · ${parsed.street ?? 'no street'}${parsed.lane ? ` · ${parsed.lane}` : ''}`
+        : 'parsed: nothing — no readable text in the notification'
+    );
+  }
+
+  return (
+    <View style={styles.section}>
+      <Row
+        label="Listener running"
+        value={nav.connected ? 'yes' : 'no'}
+        tone={nav.connected ? theme.accent : theme.warn}
+      />
+      <Row
+        label="Last notification"
+        value={raw ? raw.package : 'none seen yet'}
+        tone={raw ? theme.accent : theme.dim}
+        action={raw ? (open ? 'Hide' : 'Show') : undefined}
+        onAction={() => setOpen((value) => !value)}
+      />
+      {open && lines.length > 0 ? (
+        <Text selectable style={styles.debug}>
+          {lines.join('\n')}
+        </Text>
+      ) : null}
+      {!raw ? (
+        <Text style={styles.body}>
+          Nothing has arrived yet. Start a route in Waze or Google Maps, leave it running, then come
+          back here. If this still says none while a route is running, the app is not posting a
+          notification this listener can see.
+        </Text>
+      ) : null}
+    </View>
   );
 }
 
@@ -370,6 +432,16 @@ const styles = StyleSheet.create({
   },
   buttonText: { color: theme.text, fontWeight: '700' },
   error: { color: theme.danger, fontSize: 13 },
+  debug: {
+    color: theme.text,
+    fontSize: 11,
+    fontFamily: Platform.select({ android: 'monospace', default: 'Menlo' }),
+    padding: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: theme.border,
+    backgroundColor: theme.bg,
+  },
   adapter: {
     flexDirection: 'row',
     justifyContent: 'space-between',

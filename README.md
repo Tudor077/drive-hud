@@ -86,6 +86,12 @@ upgrades in place; it is not suitable for the Play Store. See *Signing* below.
 4. **Engine data** (⚙ → Engine data): plug in the adapter, turn the ignition on,
    then *Scan for adapters* and pick yours.
 
+If the navigation strip shows the wrong manoeuvre, or nothing at all, open
+⚙ → Navigation and press *Show* next to **Last notification**. It prints the
+notification exactly as the app sent it, along with what the parser made of it.
+Every navigation app words things differently, and that readout is what makes a
+mismatch fixable rather than guesswork.
+
 ### Gear
 
 No standard OBD-II PID reports the selected gear; it is not on the bus. What is

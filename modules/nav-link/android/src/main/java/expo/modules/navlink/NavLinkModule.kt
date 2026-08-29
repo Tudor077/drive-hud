@@ -46,5 +46,12 @@ class NavLinkModule : Module() {
     }
 
     Function("getLastInstruction") { NavBus.last }
+
+    /**
+     * Whether Android has actually bound the listener. Distinguishes "no
+     * navigation is running" from "access was granted but the service never
+     * started", which otherwise look identical from JS.
+     */
+    Function("isConnected") { NavBus.connected }
   }
 }

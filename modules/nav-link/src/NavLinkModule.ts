@@ -7,6 +7,7 @@ declare class NavLinkModule extends NativeModule<NavLinkModuleEvents> {
   hasPermission(): boolean;
   openPermissionSettings(): boolean;
   getLastInstruction(): NavNotification | null;
+  isConnected(): boolean;
 }
 
 export default requireNativeModule<NavLinkModule>('NavLink');
