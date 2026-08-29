@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { Theme } from '../theme';
+import { FONT } from '../typography';
 
 const SEGMENTS = 18;
 
@@ -62,6 +63,6 @@ const styles = StyleSheet.create({
   bar: { flexDirection: 'row', gap: 3, height: 16 },
   segment: { flex: 1, borderRadius: 2 },
   labels: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-  caption: { fontSize: 12, fontWeight: '700', letterSpacing: 2 },
-  value: { fontSize: 20, fontWeight: '800', fontVariant: ['tabular-nums'] },
+  caption: { fontSize: 13, fontFamily: FONT.label, letterSpacing: 2 },
+  value: { fontSize: 22, fontFamily: FONT.display, fontVariant: ['tabular-nums'] },
 });

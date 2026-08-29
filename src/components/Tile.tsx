@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { Theme } from '../theme';
+import { FONT } from '../typography';
 
 export function Tile({
   label,
@@ -35,10 +36,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
   },
-  label: { fontSize: 10, fontWeight: '700', letterSpacing: 1.5 },
+  label: { fontSize: 11, fontFamily: FONT.label, letterSpacing: 1.5 },
   value: {
-    fontSize: 20,
-    fontWeight: '800',
+    fontSize: 22,
+    fontFamily: FONT.display,
     fontVariant: ['tabular-nums'],
   },
 });

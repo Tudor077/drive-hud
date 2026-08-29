@@ -54,6 +54,15 @@
             "minSdkVersion": 26
           }
         }
+      ],
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "node_modules/@expo-google-fonts/rajdhani/700Bold/Rajdhani_700Bold.ttf",
+            "node_modules/@expo-google-fonts/rajdhani/600SemiBold/Rajdhani_600SemiBold.ttf"
+          ]
+        }
       ]
     ]
   }

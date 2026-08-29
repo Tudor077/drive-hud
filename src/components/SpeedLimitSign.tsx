@@ -2,6 +2,7 @@ import React from 'react';
 import Svg, { Circle, Text as SvgText } from 'react-native-svg';
 
 import type { Theme } from '../theme';
+import { FONT } from '../typography';
 
 /**
  * The round posted-limit sign: a ring around a number, so it reads as a limit
@@ -32,9 +33,9 @@ export function SpeedLimitSign({
       <Circle cx={50} cy={50} r={38} stroke={colour} strokeWidth={9} fill="none" />
       <SvgText
         x={50}
-        y={64}
-        fontSize={40}
-        fontWeight="900"
+        y={65}
+        fontSize={42}
+        fontFamily={FONT.display}
         textAnchor="middle"
         fill="none"
         stroke={colour}

@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { Theme } from '../theme';
+import { FONT } from '../typography';
 import { OutlineNumber } from './OutlineNumber';
 
 export function SpeedReadout({
@@ -33,5 +34,5 @@ export function SpeedReadout({
 
 const styles = StyleSheet.create({
   wrap: { alignItems: 'center', justifyContent: 'center' },
-  unit: { fontWeight: '700', letterSpacing: 4, marginTop: -2 },
+  unit: { fontFamily: FONT.label, letterSpacing: 4, marginTop: -2 },
 });

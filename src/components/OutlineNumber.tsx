@@ -1,6 +1,8 @@
 import React from 'react';
 import Svg, { Text as SvgText } from 'react-native-svg';
 
+import { DIGIT_ASPECT, FONT } from '../typography';
+
 /**
  * Hollow digits: stroked outline, no fill.
  *
@@ -10,7 +12,6 @@ import Svg, { Text as SvgText } from 'react-native-svg';
  *
  * React Native's own Text cannot stroke, so the digits are drawn as SVG.
  */
-const DIGIT_WIDTH = 0.62;
 
 export function OutlineNumber({
   value,
@@ -25,16 +26,16 @@ export function OutlineNumber({
   weight?: number;
 }) {
   const strokeWidth = fontSize * weight;
-  const width = value.length * fontSize * DIGIT_WIDTH + strokeWidth * 2;
+  const width = value.length * fontSize * DIGIT_ASPECT + strokeWidth * 2;
   const height = fontSize * 1.06 + strokeWidth * 2;
 
   return (
     <Svg width={width} height={height}>
       <SvgText
         x={width / 2}
-        y={fontSize * 0.79 + strokeWidth}
+        y={fontSize * 0.76 + strokeWidth}
         fontSize={fontSize}
-        fontWeight="900"
+        fontFamily={FONT.display}
         textAnchor="middle"
         fill="none"
         stroke={color}

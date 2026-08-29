@@ -17,6 +17,7 @@ import { useNavInstruction } from '../nav/useNavInstruction';
 import { useObd } from '../obd/useObd';
 import { useSettings, useTheme } from '../settings/SettingsContext';
 import { useSpeedLimit } from '../speed/useSpeedLimit';
+import { FONT } from '../typography';
 import { compassPoint, distanceLabel, kmhTo, speedFromMs, speedLabel, tempLabel } from '../units';
 
 const REDLINE_RPM = 7000;
@@ -165,7 +166,7 @@ export function HudScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
             <View style={styles.distanceBar}>
               <DistanceBar
                 distanceM={nav.distanceM}
-                height={roadHeight * 0.6}
+                height={roadHeight * 0.78}
                 color={tint}
               />
             </View>
@@ -300,14 +301,14 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   turnRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 4 },
-  turnUnit: { fontSize: 14, fontWeight: '800', letterSpacing: 1.2, paddingBottom: 6 },
-  street: { fontSize: 15, fontWeight: '700' },
-  lane: { fontSize: 11, fontWeight: '800', letterSpacing: 1.6, marginTop: 2 },
+  turnUnit: { fontSize: 15, fontFamily: FONT.label, letterSpacing: 1.2, paddingBottom: 6 },
+  street: { fontSize: 17, fontFamily: FONT.label, letterSpacing: 0.4 },
+  lane: { fontSize: 12, fontFamily: FONT.label, letterSpacing: 1.6, marginTop: 2 },
   speedZone: { alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 8 },
   centre: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10 },
-  trip: { fontSize: 12, fontWeight: '600' },
+  trip: { fontSize: 13, fontFamily: FONT.label, letterSpacing: 0.6 },
   tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center' },
-  status: { fontSize: 11, fontWeight: '700', letterSpacing: 1.4, textAlign: 'center' },
+  status: { fontSize: 12, fontFamily: FONT.label, letterSpacing: 1.3, textAlign: 'center' },
   settingsButton: {
     position: 'absolute',
     top: 8,
