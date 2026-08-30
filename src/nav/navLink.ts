@@ -11,6 +11,9 @@ type NavLinkApi = {
   openPermissionSettings(): boolean;
   getLastInstruction(): NavNotification | null;
   isConnected(): boolean;
+  hasQuietAccess(): boolean;
+  openQuietSettings(): boolean;
+  setQuiet(enabled: boolean): boolean;
   addListener(
     event: 'onNavigationUpdate',
     listener: (payload: NavNotification) => void
@@ -25,6 +28,9 @@ const UNAVAILABLE: NavLinkApi = {
   openPermissionSettings: () => false,
   getLastInstruction: () => null,
   isConnected: () => false,
+  hasQuietAccess: () => false,
+  openQuietSettings: () => false,
+  setQuiet: () => false,
   addListener: () => ({ remove() {} }),
   addClearedListener: () => ({ remove() {} }),
 };
@@ -47,6 +53,9 @@ function load(): NavLinkApi {
       openPermissionSettings: () => native.openPermissionSettings(),
       getLastInstruction: () => native.getLastInstruction(),
       isConnected: () => native.isConnected(),
+      hasQuietAccess: () => native.hasQuietAccess(),
+      openQuietSettings: () => native.openQuietSettings(),
+      setQuiet: (enabled: boolean) => native.setQuiet(enabled),
       addListener: (event, listener) => native.addListener(event, listener),
       addClearedListener: (listener) => native.addListener('onNavigationCleared', listener),
     };

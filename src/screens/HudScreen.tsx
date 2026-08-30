@@ -1,4 +1,5 @@
 import * as Brightness from 'expo-brightness';
+import * as NavigationBar from 'expo-navigation-bar';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { useKeepAwake } from 'expo-keep-awake';
 import React, { useEffect } from 'react';
@@ -16,6 +17,7 @@ import { useApproach } from '../nav/useApproach';
 import { useNavInstruction } from '../nav/useNavInstruction';
 import { useObd } from '../obd/useObd';
 import { useSettings, useTheme } from '../settings/SettingsContext';
+import { useQuietMode } from '../settings/useQuietMode';
 import { useSpeedLimit } from '../speed/useSpeedLimit';
 import { FONT, WIDEST_CELL_EM } from '../typography';
 import { compassPoint, distanceLabel, kmhTo, speedFromMs, speedLabel, tempLabel } from '../units';
@@ -51,6 +53,13 @@ export function HudScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
   const nav = navigation.instruction;
   const approach = useApproach(nav?.distanceM ?? null, gps.speedMs);
   const posted = useSpeedLimit(settings.speedLimits, gps.latitude, gps.longitude);
+  useQuietMode(settings.quietMode);
+
+  useEffect(() => {
+    // The navigation bar is a bright strip along one edge of a display whose
+    // whole point is that only the lit parts show in the reflection.
+    NavigationBar.setVisibilityAsync('hidden').catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (settings.landscape) {

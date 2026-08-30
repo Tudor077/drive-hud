@@ -34,6 +34,10 @@ object NavBus {
   @Volatile
   var connected: Boolean = false
 
+  /** The driver's own interruption filter, kept so it can be handed back. */
+  @Volatile
+  var filterBeforeQuiet: Int? = null
+
   fun isNavPackage(packageName: String) = NAV_PACKAGES.contains(packageName)
 
   fun update(body: Map<String, Any?>) {

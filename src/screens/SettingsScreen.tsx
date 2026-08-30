@@ -15,6 +15,7 @@ import { parseInstruction } from '../nav/parseInstruction';
 import { useNavInstruction } from '../nav/useNavInstruction';
 import { openWaze } from '../nav/waze';
 import { useSettings, useTheme } from '../settings/SettingsContext';
+import { useQuietMode } from '../settings/useQuietMode';
 import { ThemeMode, type Theme } from '../theme';
 
 export function SettingsScreen({ onClose }: { onClose: () => void }) {
@@ -22,6 +23,7 @@ export function SettingsScreen({ onClose }: { onClose: () => void }) {
   const styles = useStyles();
   const { settings, update } = useSettings();
   const nav = useNavInstruction(settings.navEnabled);
+  const quiet = useQuietMode(false);
 
   const [adapters, setAdapters] = useState<ScannedAdapter[]>([]);
   const [scanning, setScanning] = useState(false);
@@ -138,6 +140,31 @@ export function SettingsScreen({ onClose }: { onClose: () => void }) {
         )}
         <Button label="Open Waze" onPress={() => void openWaze()} />
         <NavDebug nav={nav} />
+      </Section>
+
+      <Section title="Quiet while driving">
+        <Text style={styles.body}>
+          Android drops a banner over whatever is in front when a notification arrives, which on a
+          windshield means someone&apos;s message lands across the road at the moment you are reading
+          it. This switches Do Not Disturb on while the HUD is up and hands your phone back exactly
+          as you left it when you leave.
+        </Text>
+        <Text style={styles.body}>
+          It holds back the display, not the notification itself, so navigation keeps working: Waze
+          and Maps still post, and the road view still reads them.
+        </Text>
+        <Toggle
+          label="Silence banners"
+          value={settings.quietMode}
+          onChange={(quietMode) => update({ quietMode })}
+        />
+        <Row
+          label="Do Not Disturb access"
+          value={quiet.granted ? 'granted' : 'not granted'}
+          tone={quiet.granted ? tint : theme.alert}
+          action={quiet.granted ? undefined : 'Grant'}
+          onAction={() => quiet.openSettings()}
+        />
       </Section>
 
       <Section title="Speed limit">

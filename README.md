@@ -79,6 +79,23 @@ and temperatures need an OBD-II adapter in the socket under the dashboard — a
 generic ELM327 clone is around €10–20. Without one, those tiles simply do not
 appear.
 
+## Quiet while driving
+
+Android drops a heads-up banner over whatever is in front when a notification
+arrives. On a windshield that means someone's message lands across the road view
+at the moment you are reading it. Drive HUD switches **Do Not Disturb** on while
+it is in front and restores whatever you had when you leave, including when the
+app is backgrounded — a phone left in a pocket is not left silent.
+
+It holds back the *display*, not the notification, so the navigation listener
+keeps receiving Waze and Maps exactly as before and the road view carries on
+reading them. That is why this rather than a vendor "game mode": those would mean
+declaring a head-up display to be a game, and only work on the handsets whose
+maker shipped one.
+
+It needs Do Not Disturb access, granted from a Settings screen like the
+notification listener. ⚙ → Quiet while driving.
+
 ## Day and night
 
 Always black, in both modes. A windshield reflects whatever the screen lights up,

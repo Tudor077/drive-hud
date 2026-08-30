@@ -23,6 +23,8 @@ export type Settings = {
   speedAlert: number;
   /** Look the limit up from OpenStreetMap. Off by default: it uses data. */
   speedLimits: boolean;
+  /** Hold notification banners back while the HUD is up. */
+  quietMode: boolean;
   obdEnabled: boolean;
   /** Remembered adapter, so the next drive reconnects without a scan. */
   obdDeviceId: string | null;
@@ -41,6 +43,7 @@ const DEFAULTS: Settings = {
   brightness: 1,
   speedAlert: 0,
   speedLimits: false,
+  quietMode: true,
   obdEnabled: false,
   obdDeviceId: null,
   obdDeviceName: null,

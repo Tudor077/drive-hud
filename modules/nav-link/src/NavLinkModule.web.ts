@@ -23,6 +23,18 @@ class NavLinkModule extends NativeModule<NavLinkModuleEvents> {
   isConnected(): boolean {
     return false;
   }
+
+  hasQuietAccess(): boolean {
+    return false;
+  }
+
+  openQuietSettings(): boolean {
+    return false;
+  }
+
+  setQuiet(): boolean {
+    return false;
+  }
 }
 
 export default registerWebModule(NavLinkModule, 'NavLinkModule');
