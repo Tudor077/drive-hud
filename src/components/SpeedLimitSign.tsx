@@ -51,7 +51,7 @@ export function SpeedLimitSign({
         fontSize={fontSize}
         fontFamily={FONT.display}
         textAnchor="middle"
-        fill="none"
+        fill={theme.mode === 'day' ? colour : 'none'}
         stroke={colour}
         strokeWidth={fontSize * 0.055}
         strokeLinejoin="round">

@@ -42,8 +42,10 @@ the side drains with the distance left to it.
 
 The road and the speed hold their own halves of the screen — side by side in
 landscape, stacked in portrait — so no chevron is ever drawn across the digits.
-Numbers are hollow: a solid figure is a solid block of light, and on a
-windshield the bigger it is the more road it hides in the reflection. They are set in
+Numbers are hollow at night: a solid figure is a solid block of light, and on a
+windshield the bigger it is the more road it hides in the reflection. In daylight
+they are filled, because there the reflection is fighting the sun rather than
+sitting on a dark road, and a hollow figure loses that fight. They are set in
 Michroma, whose wide geometric counters stay open when the glyph is stroked into
 a hollow one. Labels and the smaller figures stay in Rajdhani, which fits where a
 wide face would not.

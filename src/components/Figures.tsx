@@ -11,8 +11,17 @@ import {
 } from '../typography';
 
 /**
- * Hollow digits. On a windshield a solid number is a solid block of light, and
- * the bigger it is the more of the road it hides in the reflection.
+ * The big readouts, hollow or solid depending on the light.
+ *
+ * At night a solid number is a solid block of light, and the bigger it is the
+ * more of the road it hides in the windshield reflection — so the figures are
+ * drawn hollow and the road shows through them. In daylight that reflection is
+ * fighting the sun rather than sitting on a dark road, and a hollow figure
+ * loses: there the figures are filled, for every bit of brightness they can
+ * put on the glass.
+ *
+ * Both are drawn with the same stroke so the metrics do not change between
+ * them, and switching modes cannot reflow the layout.
  *
  * Each character is centred in a cell sized from its own measured ink, so the
  * tracking below is the whole of the spacing — at zero the digits touch. Laying
@@ -26,14 +35,16 @@ const WEIGHT = DIGIT_STROKE;
 
 const INK_HEIGHT = DIGIT_INK_TOP - DIGIT_INK_BOTTOM;
 
-export function OutlineNumber({
+export function Figures({
   value,
   fontSize,
   color,
+  filled = false,
 }: {
   value: string;
   fontSize: number;
   color: string;
+  filled?: boolean;
 }) {
   const stroke = fontSize * WEIGHT;
 
@@ -56,7 +67,7 @@ export function OutlineNumber({
               fontSize={fontSize}
               fontFamily={FONT.display}
               textAnchor="middle"
-              fill="none"
+              fill={filled ? color : 'none'}
               stroke={color}
               strokeWidth={stroke}
               strokeLinejoin="round">

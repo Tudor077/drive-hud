@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import type { Theme } from '../theme';
 import { FONT } from '../typography';
-import { OutlineNumber } from './OutlineNumber';
+import { Figures } from './Figures';
 
 export function SpeedReadout({
   value,
@@ -22,7 +22,12 @@ export function SpeedReadout({
 
   return (
     <View style={styles.wrap}>
-      <OutlineNumber value={display} fontSize={fontSize} color={color} />
+      <Figures
+        value={display}
+        fontSize={fontSize}
+        color={color}
+        filled={theme.mode === 'day'}
+      />
       <Text
         allowFontScaling={false}
         style={[styles.unit, { color: theme.dim, fontSize: fontSize * 0.13 }]}>

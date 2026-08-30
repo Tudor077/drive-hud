@@ -8,7 +8,7 @@ import { Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-na
 import { RoadView } from '../components/RoadView';
 import { RpmBar } from '../components/RpmBar';
 import { DistanceBar } from '../components/DistanceBar';
-import { OutlineNumber } from '../components/OutlineNumber';
+import { Figures } from '../components/Figures';
 import { SpeedLimitSign } from '../components/SpeedLimitSign';
 import { SpeedReadout } from '../components/SpeedReadout';
 import { Tile } from '../components/Tile';
@@ -197,10 +197,11 @@ export function HudScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
             <View style={styles.header}>
               {turnValue ? (
                 <View style={styles.turnRow}>
-                  <OutlineNumber
+                  <Figures
                     value={turnValue}
                     fontSize={Math.min(roadWidth, roadHeight) * 0.15}
                     color={tint}
+                    filled={theme.mode === 'day'}
                   />
                   <Text
                     allowFontScaling={false}
