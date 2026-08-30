@@ -2,7 +2,13 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Text as SvgText } from 'react-native-svg';
 
-import { DIGIT_INK_BOTTOM, DIGIT_INK_TOP, FONT, digitInk } from '../typography';
+import {
+  DIGIT_INK_BOTTOM,
+  DIGIT_INK_TOP,
+  DIGIT_STROKE,
+  FONT,
+  cellWidthEm,
+} from '../typography';
 
 /**
  * Hollow digits. On a windshield a solid number is a solid block of light, and
@@ -16,11 +22,7 @@ import { DIGIT_INK_BOTTOM, DIGIT_INK_TOP, FONT, digitInk } from '../typography';
  * React Native's own Text cannot stroke, so the digits are drawn as SVG.
  */
 
-/** Stroke weight as a share of the font size. */
-const WEIGHT = 0.034;
-
-/** Gap between one digit's ink and the next. Zero means touching. */
-const TRACKING = 0.015;
+const WEIGHT = DIGIT_STROKE;
 
 const INK_HEIGHT = DIGIT_INK_TOP - DIGIT_INK_BOTTOM;
 
@@ -44,7 +46,7 @@ export function OutlineNumber({
   return (
     <View style={styles.row}>
       {value.split('').map((character, index) => {
-        const width = fontSize * (digitInk(character) + WEIGHT + TRACKING);
+        const width = fontSize * cellWidthEm(character);
 
         return (
           <Svg key={`${character}-${index}`} width={width} height={height}>

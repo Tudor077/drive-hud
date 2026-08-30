@@ -17,7 +17,7 @@ import { useNavInstruction } from '../nav/useNavInstruction';
 import { useObd } from '../obd/useObd';
 import { useSettings, useTheme } from '../settings/SettingsContext';
 import { useSpeedLimit } from '../speed/useSpeedLimit';
-import { FONT } from '../typography';
+import { FONT, WIDEST_CELL_EM } from '../typography';
 import { compassPoint, distanceLabel, kmhTo, speedFromMs, speedLabel, tempLabel } from '../units';
 
 const REDLINE_RPM = 7000;
@@ -81,9 +81,14 @@ export function HudScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
   const speedWidth = isLandscape ? width - roadWidth : width;
   const speedHeight = isLandscape ? height : height - roadHeight;
 
+  // Sized so three figures always fit the zone, whatever the speed is, and so
+  // the limit sign below them fits under it. Sizing against the number actually
+  // on screen would resize the readout every time it crossed 99.
+  const WIDEST_READING = 3 * WIDEST_CELL_EM;
+  const fitsWidth = (zoneWidth: number) => (zoneWidth * 0.94) / WIDEST_READING;
   const speedFont = nav
-    ? Math.min(speedWidth * 0.52, speedHeight * 0.46)
-    : Math.min(width * 0.42, height * 0.5);
+    ? Math.min(fitsWidth(speedWidth), speedHeight * 0.4)
+    : Math.min(fitsWidth(width), height * 0.46);
 
   const { readings } = obd;
   const showObd = settings.obdEnabled && obd.status === 'live';
@@ -305,7 +310,7 @@ const styles = StyleSheet.create({
   street: { fontSize: 17, fontFamily: FONT.label, letterSpacing: 0.4 },
   lane: { fontSize: 12, fontFamily: FONT.label, letterSpacing: 1.6, marginTop: 2 },
   speedZone: { alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 8 },
-  centre: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10 },
+  centre: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 6 },
   trip: { fontSize: 13, fontFamily: FONT.label, letterSpacing: 0.6 },
   tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center' },
   status: { fontSize: 12, fontFamily: FONT.label, letterSpacing: 1.3, textAlign: 'center' },

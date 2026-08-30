@@ -57,3 +57,18 @@ export function digitInk(character: string): number {
   if (ink == null) return MIN_DIGIT_INK;
   return character === '.' || character === ',' ? ink : Math.max(ink, MIN_DIGIT_INK);
 }
+
+/** Stroke weight and the gap between one digit's ink and the next, in ems. */
+export const DIGIT_STROKE = 0.034;
+export const DIGIT_TRACKING = 0.015;
+
+/** Width of the cell a character is centred in, in ems. */
+export function cellWidthEm(character: string): number {
+  return digitInk(character) + DIGIT_STROKE + DIGIT_TRACKING;
+}
+
+/**
+ * The widest a figure can be. Layouts size themselves against this rather than
+ * against the number on screen, so the readout does not resize as it counts.
+ */
+export const WIDEST_CELL_EM = cellWidthEm('4');
