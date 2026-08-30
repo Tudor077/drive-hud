@@ -201,7 +201,7 @@ export function HudScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
                     value={turnValue}
                     fontSize={Math.min(roadWidth, roadHeight) * 0.15}
                     color={tint}
-                    filled={theme.mode === 'day'}
+                    filled={theme.solidFigures}
                   />
                   <Text
                     allowFontScaling={false}

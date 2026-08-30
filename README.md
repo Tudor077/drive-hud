@@ -100,18 +100,35 @@ notification listener. ⚙ → Quiet while driving.
 
 ## Day and night
 
-Always black, in both modes. A windshield reflects whatever the screen lights up,
-so black is effectively transparent and a light background would throw a bright
-rectangle back at the driver.
+**Night is red on black.** Red barely touches the eye's dark adaptation, so the
+road outside stays as visible as it was, and black is effectively transparent in
+the windshield reflection — only the lit parts come back at you.
 
-What the mode changes is the colour of the light. **Night is red**, for the same
-reason cockpits and chart tables are: red barely touches the eye's dark
-adaptation, so the road outside stays as visible as it was. **Day is turquoise**,
-which holds up against sunlight where red washes out. ⚙ → Display → Mode.
+**Day is black on yellow**, which inverts that on purpose. In sunlight there is
+no useful reflection to work with: the screen is read directly, and what wins is
+raw light. Yellow is the brightest colour a phone can put out for the power it
+spends — it carries 93% of white's luminance while lighting two subpixels instead
+of three, so an OLED's brightness limiter throttles it less than it throttles
+white. Black on it gives 19.6:1 contrast, against a theoretical maximum of 21.
 
-Warnings — over the limit, coolant too hot, battery low — are drawn in a colour
-set apart from the tint, amber at night and red by day, since a red warning
-against a red display says nothing.
+This has not been measured on a real handset in real sun. It is reasoned from the
+sRGB luminance coefficients and how OLED panels behave, which is why **every
+colour is yours to change**: ⚙ → Colours picks a background and an ink for each
+mode, and everything else on the display is mixed from those two, so no choice
+can leave part of it unreadable. The contrast ratio of the pair is shown as you
+pick, with a warning under 7:1.
+
+Figures fill on a light ground and go hollow on a dark one, following the same
+logic: hollow exists so the road shows through in a dark reflection, and a light
+screen has no reflection to see through.
+
+**Switching is automatic** by default. The ambient light sensor leads, because it
+is the only thing that knows about a tunnel at noon or a multi-storey car park.
+Where a phone has no sensor, the sun's position from your GPS fix takes over — a
+clock that knows about latitude and the season, rather than a fixed hour: at these
+latitudes sunset moves by over three hours across the year. There is a fifteen
+second settling time and a wide dead band between the two thresholds, so a line of
+trees cannot make it flicker. ⚙ → Display → Mode also has plain night and day.
 
 ## Install
 

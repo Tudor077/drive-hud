@@ -8,7 +8,7 @@ import React, {
   useState,
 } from 'react';
 
-import { THEMES, Theme, ThemeMode } from '../theme';
+import { DEFAULT_PALETTES, Palette, Theme, ThemeMode, buildTheme } from '../theme';
 import { SpeedUnit } from '../units';
 
 export type Settings = {
@@ -17,7 +17,10 @@ export type Settings = {
   /** Flip horizontally so the reflection in the windshield reads correctly. */
   mirrored: boolean;
   landscape: boolean;
-  mode: ThemeMode;
+  /** 'auto' follows the light sensor, falling back to where the sun is. */
+  mode: ThemeMode | 'auto';
+  /** Background and ink for each mode, so both can be dialled in on the road. */
+  palettes: Record<ThemeMode, Palette>;
   brightness: number;
   /** Warn above this speed, in the chosen unit. 0 disables the warning. */
   speedAlert: number;
@@ -39,7 +42,8 @@ const DEFAULTS: Settings = {
   fahrenheit: false,
   mirrored: false,
   landscape: true,
-  mode: 'night',
+  mode: 'auto',
+  palettes: DEFAULT_PALETTES,
   brightness: 1,
   speedAlert: 0,
   speedLimits: false,
@@ -107,9 +111,30 @@ export function useSettings() {
   return useContext(SettingsContext);
 }
 
-/** The palette for the mode currently chosen. */
+/**
+ * The palette for the mode in force. In 'auto' that is decided elsewhere and
+ * handed back in through {@link SettingsProvider}, so every component reading a
+ * theme sees the same one.
+ */
+const ResolvedModeContext = createContext<ThemeMode>('night');
+
+export function ResolvedModeProvider({
+  mode,
+  children,
+}: {
+  mode: ThemeMode;
+  children: React.ReactNode;
+}) {
+  return <ResolvedModeContext.Provider value={mode}>{children}</ResolvedModeContext.Provider>;
+}
+
 export function useTheme(): { theme: Theme; tint: string } {
   const { settings } = useSettings();
-  const theme = THEMES[settings.mode];
-  return useMemo(() => ({ theme, tint: theme.tint }), [theme]);
+  const resolved = useContext(ResolvedModeContext);
+  const mode = settings.mode === 'auto' ? resolved : settings.mode;
+
+  return useMemo(() => {
+    const theme = buildTheme(mode, settings.palettes[mode] ?? DEFAULT_PALETTES[mode]);
+    return { theme, tint: theme.tint };
+  }, [mode, settings.palettes]);
 }

@@ -16,7 +16,9 @@ import { useNavInstruction } from '../nav/useNavInstruction';
 import { openWaze } from '../nav/waze';
 import { useSettings, useTheme } from '../settings/SettingsContext';
 import { useQuietMode } from '../settings/useQuietMode';
-import { ThemeMode, type Theme } from '../theme';
+import { DEFAULT_PALETTES, ThemeMode, type Theme } from '../theme';
+import { contrastRatio } from '../color';
+import { ColorGrid } from '../components/ColorGrid';
 
 export function SettingsScreen({ onClose }: { onClose: () => void }) {
   const { theme, tint } = useTheme();
@@ -24,6 +26,8 @@ export function SettingsScreen({ onClose }: { onClose: () => void }) {
   const { settings, update } = useSettings();
   const nav = useNavInstruction(settings.navEnabled);
   const quiet = useQuietMode(false);
+  const [editing, setEditing] = useState<ThemeMode>(theme.mode);
+  const contrast = contrastRatio(settings.palettes[editing].bg, settings.palettes[editing].ink);
 
   const [adapters, setAdapters] = useState<ScannedAdapter[]>([]);
   const [scanning, setScanning] = useState(false);
@@ -70,12 +74,18 @@ export function SettingsScreen({ onClose }: { onClose: () => void }) {
         <Choice
           label="Mode"
           options={[
-            { key: 'night', label: 'night · red' },
-            { key: 'day', label: 'day · turquoise' },
+            { key: 'auto', label: 'auto' },
+            { key: 'night', label: 'night' },
+            { key: 'day', label: 'day' },
           ]}
           value={settings.mode}
-          onChange={(key) => update({ mode: key as ThemeMode })}
+          onChange={(key) => update({ mode: key as ThemeMode | 'auto' })}
         />
+        <Text style={styles.body}>
+          Auto follows the ambient light sensor, which is the only thing that knows about a tunnel
+          at noon. On a phone without one it falls back to where the sun is, worked out from your
+          position — a clock that knows about latitude and the season, rather than a fixed hour.
+        </Text>
         <Choice
           label="Units"
           options={[
@@ -140,6 +150,56 @@ export function SettingsScreen({ onClose }: { onClose: () => void }) {
         )}
         <Button label="Open Waze" onPress={() => void openWaze()} />
         <NavDebug nav={nav} />
+      </Section>
+
+      <Section title="Colours">
+        <Text style={styles.body}>
+          Everything on the display is mixed from these two, so whatever you pick stays readable.
+          Night defaults to red on black: red barely touches your eyes&apos; dark adaptation, and
+          black is effectively transparent in the windshield reflection. Day defaults to black on
+          yellow — yellow is the brightest colour a screen can put out for the power it spends,
+          carrying 93% of white&apos;s light from two subpixels instead of three, so the panel&apos;s
+          brightness limiter throttles it less than it throttles white.
+        </Text>
+        <Choice
+          label="Editing"
+          options={[
+            { key: 'night', label: 'night' },
+            { key: 'day', label: 'day' },
+          ]}
+          value={editing}
+          onChange={(key) => setEditing(key as ThemeMode)}
+        />
+        <Text style={[styles.label, { marginTop: 4 }]}>Background</Text>
+        <ColorGrid
+          value={settings.palettes[editing].bg}
+          borderColor={theme.border}
+          onChange={(bg) =>
+            update({ palettes: { ...settings.palettes, [editing]: { ...settings.palettes[editing], bg } } })
+          }
+        />
+        <Text style={[styles.label, { marginTop: 8 }]}>Text and figures</Text>
+        <ColorGrid
+          value={settings.palettes[editing].ink}
+          borderColor={theme.border}
+          onChange={(ink) =>
+            update({ palettes: { ...settings.palettes, [editing]: { ...settings.palettes[editing], ink } } })
+          }
+        />
+        <Row
+          label="Contrast"
+          value={`${contrast.toFixed(1)}:1`}
+          tone={contrast >= 7 ? tint : theme.alert}
+        />
+        {contrast < 7 ? (
+          <Text style={styles.body}>
+            Under about 7:1 the figures start to disappear against their own background in daylight.
+          </Text>
+        ) : null}
+        <Button
+          label="Back to the defaults"
+          onPress={() => update({ palettes: DEFAULT_PALETTES })}
+        />
       </Section>
 
       <Section title="Quiet while driving">

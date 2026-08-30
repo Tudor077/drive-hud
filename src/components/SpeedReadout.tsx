@@ -26,7 +26,7 @@ export function SpeedReadout({
         value={display}
         fontSize={fontSize}
         color={color}
-        filled={theme.mode === 'day'}
+        filled={theme.solidFigures}
       />
       <Text
         allowFontScaling={false}

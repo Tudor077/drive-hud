@@ -5,6 +5,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import { HudScreen } from './src/screens/HudScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
+import { AutoTheme } from './src/settings/AutoTheme';
 import { SettingsProvider, useSettings, useTheme } from './src/settings/SettingsContext';
 
 function Root() {
@@ -34,7 +35,9 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <SettingsProvider>
-        <Root />
+        <AutoTheme>
+          <Root />
+        </AutoTheme>
       </SettingsProvider>
     </SafeAreaProvider>
   );
