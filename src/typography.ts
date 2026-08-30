@@ -14,23 +14,46 @@ export const FONT = {
 } as const;
 
 /**
- * Michroma's digits, measured from the font file rather than guessed.
+ * Michroma's digits, measured out of the font file rather than guessed.
  *
- * The gap between figures came from the difference between these two: a digit
- * advances up to 1.0 em but only paints 0.875 of one, so the face carries about
- * an eighth of an em of its own side bearing. Laying the glyphs out in cells
- * sized by the advance added that built-in space on top of the cell's own, and
- * the number came out airy.
+ * Two things came out of measuring. A digit advances up to 1.0 em but paints
+ * only 0.665 to 0.875 of one, so the face carries a lot of its own side
+ * bearing; and the digits are far from equal in width — "4" is a third wider
+ * than "1".
  *
- * Centring each glyph in a cell sized from the *ink* drops the side bearings
- * entirely and leaves the spacing to be set here, deliberately.
+ * Laying them out in one tabular cell therefore meant sizing every cell for
+ * "4", and every other digit floated in the difference. Giving each its own
+ * cell makes {@link DIGIT_TRACKING} mean what it says: the gap between one
+ * digit's ink and the next, with zero meaning they touch.
+ *
+ * The cost is that the number is no longer tabular, so it shifts a little as it
+ * counts. {@link MIN_DIGIT_INK} keeps that in check by stopping the narrow "1"
+ * from collapsing to its ink — Michroma draws it narrow precisely because it
+ * expects to sit in a wide advance.
  */
-export const MICHROMA = {
-  /** Widest inked digit, in ems. */
-  inkWidth: 0.875,
-  /** Ink from baseline: top +0.7656, bottom -0.0156. */
-  inkTop: 0.7656,
-  inkBottom: -0.0156,
-  /** Advance of a full stop, which needs far less room than a digit. */
-  dotWidth: 0.22,
-} as const;
+export const DIGIT_INK: Record<string, number> = {
+  '0': 0.826,
+  '1': 0.665,
+  '2': 0.812,
+  '3': 0.822,
+  '4': 0.875,
+  '5': 0.802,
+  '6': 0.822,
+  '7': 0.844,
+  '8': 0.822,
+  '9': 0.822,
+  '.': 0.22,
+  ',': 0.22,
+};
+
+const MIN_DIGIT_INK = 0.79;
+
+/** Ink from the baseline: top +0.7656, bottom -0.0156. */
+export const DIGIT_INK_TOP = 0.7656;
+export const DIGIT_INK_BOTTOM = -0.0156;
+
+export function digitInk(character: string): number {
+  const ink = DIGIT_INK[character];
+  if (ink == null) return MIN_DIGIT_INK;
+  return character === '.' || character === ',' ? ink : Math.max(ink, MIN_DIGIT_INK);
+}

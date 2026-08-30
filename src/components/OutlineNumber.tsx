@@ -2,28 +2,27 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Text as SvgText } from 'react-native-svg';
 
-import { FONT, MICHROMA } from '../typography';
+import { DIGIT_INK_BOTTOM, DIGIT_INK_TOP, FONT, digitInk } from '../typography';
 
 /**
  * Hollow digits. On a windshield a solid number is a solid block of light, and
  * the bigger it is the more of the road it hides in the reflection.
  *
- * Each character is centred in its own cell rather than laid out as a run of
- * text. That makes the digits tabular — the number does not shuffle sideways as
- * it counts — and it means the spacing is set here from the measured ink rather
- * than inherited from the face's own side bearings, which are generous in a
- * display font and looked it.
+ * Each character is centred in a cell sized from its own measured ink, so the
+ * tracking below is the whole of the spacing — at zero the digits touch. Laying
+ * them out as a run of text instead would inherit the face's side bearings,
+ * which are generous in a display font and looked it.
  *
  * React Native's own Text cannot stroke, so the digits are drawn as SVG.
  */
 
 /** Stroke weight as a share of the font size. */
-const WEIGHT = 0.032;
+const WEIGHT = 0.034;
 
-/** Air between one digit's ink and the next. The whole of the spacing. */
-const TRACKING = 0.035;
+/** Gap between one digit's ink and the next. Zero means touching. */
+const TRACKING = 0.015;
 
-const INK_HEIGHT = MICHROMA.inkTop - MICHROMA.inkBottom;
+const INK_HEIGHT = DIGIT_INK_TOP - DIGIT_INK_BOTTOM;
 
 export function OutlineNumber({
   value,
@@ -38,16 +37,14 @@ export function OutlineNumber({
 
   // Tall enough for the ink plus its stroke, with the leftover split evenly
   // above and below so the figures sit centred in whatever row holds them.
-  const height = fontSize * (INK_HEIGHT + WEIGHT) + fontSize * 0.05;
-  const baseline =
-    (height - fontSize * (INK_HEIGHT + WEIGHT)) / 2 + fontSize * (MICHROMA.inkTop + WEIGHT / 2);
+  const inked = fontSize * (INK_HEIGHT + WEIGHT);
+  const height = inked + fontSize * 0.05;
+  const baseline = (height - inked) / 2 + fontSize * (DIGIT_INK_TOP + WEIGHT / 2);
 
   return (
     <View style={styles.row}>
       {value.split('').map((character, index) => {
-        const isDot = character === '.' || character === ',';
-        const ink = isDot ? MICHROMA.dotWidth : MICHROMA.inkWidth;
-        const width = fontSize * (ink + WEIGHT + TRACKING);
+        const width = fontSize * (digitInk(character) + WEIGHT + TRACKING);
 
         return (
           <Svg key={`${character}-${index}`} width={width} height={height}>

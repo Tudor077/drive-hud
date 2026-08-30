@@ -2,7 +2,7 @@ import React from 'react';
 import Svg, { Circle, Text as SvgText } from 'react-native-svg';
 
 import type { Theme } from '../theme';
-import { FONT, MICHROMA } from '../typography';
+import { DIGIT_INK_BOTTOM, DIGIT_INK_TOP, FONT, digitInk } from '../typography';
 
 /**
  * The round posted-limit sign: a ring around a number, so it reads as a limit
@@ -36,9 +36,10 @@ export function SpeedLimitSign({
 
   // Sized from the measured ink so a three-figure limit fits the ring instead
   // of running out through it.
-  const perDigit = MICHROMA.inkWidth + 0.06;
-  const fontSize = Math.min(34, CLEAR_WIDTH / (figures.length * perDigit));
-  const baseline = 50 + fontSize * (MICHROMA.inkTop - MICHROMA.inkBottom) / 2 + fontSize * MICHROMA.inkBottom;
+  const inkWidth = figures.split('').reduce((total, digit) => total + digitInk(digit) + 0.05, 0);
+  const fontSize = Math.min(34, CLEAR_WIDTH / inkWidth);
+  const baseline =
+    50 + (fontSize * (DIGIT_INK_TOP - DIGIT_INK_BOTTOM)) / 2 + fontSize * DIGIT_INK_BOTTOM;
 
   return (
     <Svg width={size} height={size} viewBox="0 0 100 100">

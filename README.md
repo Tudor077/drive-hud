@@ -48,13 +48,13 @@ Michroma, whose wide geometric counters stay open when the glyph is stroked into
 a hollow one. Labels and the smaller figures stay in Rajdhani, which fits where a
 wide face would not.
 
-Each figure is centred in its own cell, sized from ink widths measured out of the
-font file rather than from the advance widths. A display face carries generous
-side bearings — Michroma's digits advance up to 1.0 em but paint only 0.875 —
-and laying them out by advance stacks that built-in space on top of the layout's
-own. Sizing by the ink drops it, leaving the spacing set deliberately in one
-constant. It also makes the digits tabular, so the number does not shuffle
-sideways as it counts.
+Each figure is centred in a cell sized from its own ink, measured out of the font
+file. Michroma's digits are far from equal — "4" paints 0.875 em, "1" only
+0.665 — so a tabular layout has to size every cell for the widest and leaves
+every other digit floating in the difference. Per-digit cells make the tracking
+constant mean the literal gap between one digit's ink and the next, with zero
+meaning they touch. The number is not tabular as a result and shifts a little as
+it counts; a floor under the narrow "1" keeps that small.
 
 Fonts are embedded at build time — react-native-svg resolves a family by asking
 the platform, so a runtime-loaded font would never reach the digits.
