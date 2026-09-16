@@ -50,6 +50,12 @@ const ETA_PHRASE =
   /\b(?:arriv\S*|arrival|eta|sosire|sose\S*|άφιξη)\b[^·|,;]{0,12}\d{1,2}[:.]\d{2}\s*(?:am|pm)?/gi;
 const CLOCK_TIME = /\b\d{1,2}[:.]\d{2}\b/g;
 
+/**
+ * The last stretch, where apps drop the figure and name the moment instead.
+ * Without this the turn reads as having no distance at all.
+ */
+const IMMINENT = /\bnow\b|\bacum\b|τώρα|\bimediat\b/i;
+
 /** The arrival clock time itself, which is worth showing even though the
  *  wording around it has to be stripped before reading the manoeuvre. */
 const ETA_TIME = /\b(\d{1,2}[:.]\d{2})\s*(am|pm)?/i;
@@ -192,7 +198,11 @@ export function parseInstruction(notification: NavNotification): Instruction | n
 
   const turnText = stripEta((turnFields.length > 0 ? turnFields : fields).join(' · '));
   const match = turnText.match(DISTANCE);
-  const distanceM = match ? toMeters(Number(match[1].replace(',', '.')), match[2]) : null;
+  const distanceM = match
+    ? toMeters(Number(match[1].replace(',', '.')), match[2])
+    : IMMINENT.test(turnText)
+      ? 0
+      : null;
 
   const trip = tripFields.join(' · ');
   const durationMatch = trip.match(DURATION);

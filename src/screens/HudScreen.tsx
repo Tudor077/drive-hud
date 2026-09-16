@@ -13,7 +13,7 @@ import { SpeedLimitSign } from '../components/SpeedLimitSign';
 import { SpeedReadout } from '../components/SpeedReadout';
 import { Tile } from '../components/Tile';
 import { useSpeed } from '../location/useSpeed';
-import { useApproach } from '../nav/useApproach';
+import { useTurnDistance } from '../nav/useTurnDistance';
 import { useNavInstruction } from '../nav/useNavInstruction';
 import { useObd } from '../obd/useObd';
 import { useSettings, useTheme } from '../settings/SettingsContext';
@@ -51,7 +51,7 @@ export function HudScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
   });
   const navigation = useNavInstruction(settings.navEnabled);
   const nav = navigation.instruction;
-  const approach = useApproach(nav?.distanceM ?? null, gps.speedMs);
+  const approach = useTurnDistance(nav != null, nav?.distanceM ?? null, gps.speedMs);
   const posted = useSpeedLimit(settings.speedLimits, gps.latitude, gps.longitude);
   useQuietMode(settings.quietMode);
 
@@ -179,19 +179,19 @@ export function HudScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
           <View style={{ width: roadWidth, height: roadHeight }}>
             <View style={styles.distanceBar}>
               <DistanceBar
-                distanceM={nav.distanceM}
+                distanceM={approach.metres}
                 height={roadHeight * 0.78}
                 color={tint}
               />
             </View>
             <RoadView
               maneuver={nav.maneuver}
-              distanceM={nav.distanceM}
+              distanceM={approach.metres}
               width={roadWidth}
               height={roadHeight}
               theme={theme}
               tint={tint}
-              boardDistance={approach}
+              boardDistance={approach.animated}
             />
             {/* Sits in the sky above the horizon, clear of every chevron. */}
             <View style={styles.header}>

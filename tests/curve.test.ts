@@ -19,7 +19,13 @@ const geometry = (bendX: number) => ({
 test('the road is straight until the turn is worth showing', () => {
   assert.equal(bendProgress(STRAIGHT_UNTIL_M), 0);
   assert.equal(bendProgress(900), 0);
-  assert.equal(bendProgress(null), 0);
+});
+
+test('a manoeuvre with no distance is imminent, not absent', () => {
+  // Reported from a drive: the bend vanished at about 50 m. Navigation apps
+  // drop the figure in the last stretch and say "Now" instead, and reading
+  // that as "far away" straightened the road exactly at the corner.
+  assert.equal(bendProgress(null), 1);
 });
 
 test('the bend tightens all the way to the turn', () => {

@@ -17,7 +17,11 @@ export const STRAIGHT_UNTIL_M = 600;
 const BEND_CURVE = 1.6;
 
 export function bendProgress(distanceM: number | null): number {
-  if (distanceM == null) return 0;
+  // A live manoeuvre with no distance attached is an imminent one, not an
+  // absent one: navigation apps drop the figure in the last stretch and say
+  // "Now" instead. Reading that as "far away" straightened the road exactly
+  // when the corner arrived.
+  if (distanceM == null) return 1;
   const remaining = Math.max(0, Math.min(STRAIGHT_UNTIL_M, distanceM));
   return ((STRAIGHT_UNTIL_M - remaining) / STRAIGHT_UNTIL_M) ** BEND_CURVE;
 }

@@ -211,3 +211,15 @@ test('has no trip figures when the app did not give any', () => {
   assert.equal(parsed.remainingM, null);
   assert.equal(parsed.distanceM, 300);
 });
+
+test('reads the last stretch, where the figure gives way to a word', () => {
+  // At the corner itself apps stop counting metres and name the moment.
+  assert.equal(parseInstruction(notification({ title: 'Turn right now' }))!.distanceM, 0);
+  assert.equal(parseInstruction(notification({ title: 'Virează dreapta acum' }))!.distanceM, 0);
+  assert.equal(parseInstruction(notification({ title: 'Στρίψτε δεξιά τώρα' }))!.distanceM, 0);
+});
+
+test('a distance still wins over the word when both are there', () => {
+  const parsed = parseInstruction(notification({ title: 'Turn right', text: '200 m' }))!;
+  assert.equal(parsed.distanceM, 200);
+});
